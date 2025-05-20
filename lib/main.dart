@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:hr_management/login/login_screen.dart';
-import 'package:hr_management/upgrade_screen/upgrade_plans.dart';
-import 'package:hr_management/widgets/Nav_bar.dart';
-import 'Configuration/theme.dart';
-import 'Welcome_page/welcome_page.dart';
-import 'onboarding/onboarding_screen.dart';
+import 'config/theme.dart';
+import 'core/widgets/Nav_bar.dart';
+import 'features/Welcome_page/welcome_page.dart';
+import 'features/upgrade_screen/upgrade_plans.dart';
 
 void main() {
   runApp(
