@@ -43,7 +43,7 @@ class NewEmployeeForm extends StatelessWidget {
             const CustomTextField(hint: "Enter Number", keyboardType: TextInputType.number),
 
             const SectionTitle(title: "Email*"),
-            const CustomTextField(hint: "example@gmail.com", icon: Icons.email),
+            const CustomTextField(hint: "example@gmail.com", ),
 
 
             const SectionTitle(title: "Website"),

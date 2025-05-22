@@ -7,7 +7,7 @@ class FontStyles {
     double fontSize = 22,
     FontWeight fontWeight = FontWeight.bold,
   }) {
-    return GoogleFonts.sansita(
+    return GoogleFonts.roboto(
       color: color,
       fontSize: fontSize,
       fontWeight: fontWeight,
@@ -19,7 +19,7 @@ class FontStyles {
     double fontSize = 13,
     FontWeight fontWeight = FontWeight.w600,
   }) {
-    return GoogleFonts.sansita(
+    return GoogleFonts.roboto(
       color: color,
       fontSize: fontSize,
       fontWeight: fontWeight,
@@ -31,7 +31,7 @@ class FontStyles {
     double fontSize = 14,
     FontWeight fontWeight = FontWeight.normal,
   }) {
-    return GoogleFonts.sansita(
+    return GoogleFonts.roboto(
       color: color,
       fontSize: fontSize,
       fontWeight: fontWeight,

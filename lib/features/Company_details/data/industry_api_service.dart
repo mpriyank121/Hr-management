@@ -1,7 +1,8 @@
+import '../../../constants/api_constants.dart';
 import '../../../core/services/base_api_service.dart';
 
 class IndustryApiService extends BaseApiService {
-  final String _url = 'https://apis-stg.bookchor.com/webservices/hrms/v1/apis.php';
+  final String _url = (ApiConstants.registerCompany);
 
   Future<List<Map<String, dynamic>>> fetchIndustries() async {
     final response = await sendMultipartPost(

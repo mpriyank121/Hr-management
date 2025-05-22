@@ -23,6 +23,7 @@ class CompanyDetailsScreen extends StatefulWidget {
 class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
   final IndustryController controller = Get.put(IndustryController());
   final CompanyDetailsController detailsController = Get.put(CompanyDetailsController());
+
   File? panImage;
   File? orgLogo;
   String? selectedIndustryId;
@@ -30,12 +31,11 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    controller.fetchIndustries(); // Fetch industries on screen load
+    controller.fetchIndustries();
   }
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: CustomAppBar(
         title: "Fill Company Details",
@@ -46,19 +46,19 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
         child: Column(
           children: [
             CompanyLogoPicker(
-              onImageSelected: (file) => orgLogo = file,
+              onImageSelected: (file) => detailsController.orgLogo = file,
             ),
 
             AppSpacing.small(context),
 
             const SectionTitle(title: "Company Name*"),
-            AppSpacing.small(context),
-            CustomTextField(hint: "A to Z",
-              onChanged: (value) => detailsController.orgName.value = value,),
-            AppSpacing.small(context),
+            CustomTextField(
+              hint: "A to Z",
+              controller: detailsController.orgNameController,
+            ),
 
-            const SectionTitle(title: "Business Field*"),
             AppSpacing.small(context),
+            const SectionTitle(title: "Business Field*"),
 
             Obx(() {
               return DropdownField(
@@ -73,6 +73,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
                 onChanged: (value) {
                   setState(() {
                     selectedIndustryId = value;
+                    detailsController.industryTypeController.text = value ?? '';
                   });
                 },
               );
@@ -80,90 +81,112 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
             AppSpacing.small(context),
             const SectionTitle(title: "Address*"),
-            AppSpacing.small(context),
-             CustomTextField(hint: "A to Z",
-              onChanged: (value) => detailsController.address.value = value,),
-            AppSpacing.small(context),
+            CustomTextField(
+              hint: "A to Z",
+              controller: detailsController.addressController,
+            ),
 
-            const SectionTitle(title: "Pin Code*"),
             AppSpacing.small(context),
-             CustomTextField(hint: "A to Z", keyboardType: TextInputType.number,
-              onChanged: (value) => detailsController.pincode.value = value,),
+            const SectionTitle(title: "Pin Code*"),
+            CustomTextField(
+              hint: "6-digit PIN",
+              keyboardType: TextInputType.number,
+              controller: detailsController.pincodeController,
+              onChanged: detailsController.onPincodeChanged,
+            ),
+
             AppSpacing.small(context),
             const SectionTitle(title: "State"),
-            AppSpacing.small(context),
-            CustomTextField(hint: "Enter State", keyboardType: TextInputType.number,
-              onChanged: (value) => detailsController.state.value = value,),
+            CustomTextField(
+              hint: "Enter State",
+              controller: detailsController.stateController,
+            ),
+
             AppSpacing.small(context),
             const SectionTitle(title: "City"),
-            AppSpacing.small(context),
-            CustomTextField(hint: "Enter City", keyboardType: TextInputType.number,
-              onChanged: (value) => detailsController.city.value = value,),
-            AppSpacing.small(context),
+            CustomTextField(
+              hint: "Enter City",
+              controller: detailsController.cityController,
+            ),
 
+            AppSpacing.small(context),
             const SectionTitle(title: "Email*"),
-            AppSpacing.small(context),
-             CustomTextField(hint: "example@gmail.com", icon: Icons.email,
-              onChanged: (value) => detailsController.email.value = value,),
-            AppSpacing.small(context),
+            CustomTextField(
+              hint: "example@gmail.com",
+              controller: detailsController.emailController,
+            ),
 
-             SectionTitle(title: "Phone Number*",
-              onChanged: (value) => detailsController.address.value = value,),
             AppSpacing.small(context),
-            Row(
+            const SectionTitle(title: "Phone Number*"),
+            Obx(() => Row(
               children: [
-                 Expanded(
-                  child: CustomTextField(hint: "+91 | 9876543210", keyboardType: TextInputType.phone,
-                    onChanged: (value) => detailsController.phone.value = value,),
+                Expanded(
+                  child: CustomTextField(
+                    hint: "+91 | 9876543210",
+                    keyboardType: TextInputType.phone,
+                    controller: detailsController.phoneController,
+                  ),
                 ),
                 const SizedBox(width: 8),
                 PrimaryButton(
                   heightFactor: 0.06,
-                  widthFactor: 0.2,
-                  text: "Verify",
-                  onPressed: () {},
+                  widthFactor: 0.3,
+                  text: detailsController.isOtpSent.value ? "Verify" : "Send OTP",
+                  onPressed: () {
+                    if (detailsController.isOtpSent.value) {
+                      detailsController.verifyUserOtp();
+                    } else {
+                      detailsController.sendOtpToUser();
+                    }
+                  },
                 ),
               ],
-            ),
-            AppSpacing.small(context),
-            const OtpInputBoxes(),
-            AppSpacing.small(context),
+            )),
 
-            const SectionTitle(title: "Website",
-            ),
-            AppSpacing.small(context),
-             CustomTextField(hint: "www.example.com",
-              onChanged: (value) => detailsController.website.value = value,),
-            AppSpacing.small(context),
 
+            AppSpacing.small(context),
+             OtpInputBoxes(
+              onOtpChanged: (otp) {
+                detailsController.otpController.text = otp;
+              },
+            ),
+
+            AppSpacing.small(context),
+            const SectionTitle(title: "Website"),
+            CustomTextField(
+              hint: "www.example.com",
+              controller: detailsController.websiteController,
+            ),
+
+            AppSpacing.small(context),
             const SectionTitle(title: "GST Number"),
-            AppSpacing.small(context),
-             CustomTextField(hint: "Optional",
-              onChanged: (value) => detailsController.gstNo.value = value,),
-            AppSpacing.small(context),
+            CustomTextField(
+              hint: "Optional",
+              controller: detailsController.gstNoController,
+            ),
 
+            AppSpacing.small(context),
             const SectionTitle(title: "PAN Number*"),
-            AppSpacing.small(context),
-             CustomTextField(hint: "A to Z",
-               onChanged: (value) => detailsController.panNumber.value = value,),
-            AppSpacing.small(context),
+            CustomTextField(
+              hint: "A to Z",
+              controller: detailsController.panNumberController,
+            ),
 
+            AppSpacing.small(context),
             const SectionTitle(title: "Upload PAN"),
-            AppSpacing.small(context),
-
             UploadCard(
               title: "Upload your PAN card",
-              onImageSelected: (file) => panImage = file,
+              onImageSelected: (file) => detailsController.panImage = file,
             ),
 
             AppSpacing.small(context),
-
             PrimaryButton(
               text: "Register Now",
               onPressed: () {
                 detailsController.registerCompany();
               },
             ),
+
             AppSpacing.small(context),
             const Text.rich(
               TextSpan(
