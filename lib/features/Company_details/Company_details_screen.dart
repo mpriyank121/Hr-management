@@ -118,38 +118,61 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
             AppSpacing.small(context),
             const SectionTitle(title: "Phone Number*"),
-            Obx(() => Row(
-              children: [
-                Expanded(
-                  child: CustomTextField(
-                    hint: "+91 | 9876543210",
-                    keyboardType: TextInputType.phone,
-                    controller: detailsController.phoneController,
+            Obx(() {
+              // Button text logic
+              String buttonText;
+              if (detailsController.isPhoneVerified.value) {
+                buttonText = "Verified";
+              } else if (detailsController.isOtpSent.value) {
+                buttonText = "Resend OTP";
+              } else {
+                buttonText = "Send OTP";
+              }
+
+              return Row(
+                children: [
+                  Expanded(
+                    child: CustomTextField(
+                      hint: "+91 | 9876543210",
+                      keyboardType: TextInputType.phone,
+                      controller: detailsController.phoneController,
+                      enabled: !detailsController.isPhoneVerified.value,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                PrimaryButton(
-                  heightFactor: 0.06,
-                  widthFactor: 0.3,
-                  text: detailsController.isOtpSent.value ? "Verify" : "Send OTP",
-                  onPressed: () {
-                    if (detailsController.isOtpSent.value) {
-                      detailsController.verifyUserOtp();
-                    } else {
-                      detailsController.sendOtpToUser();
-                    }
-                  },
-                ),
-              ],
-            )),
+                  const SizedBox(width: 8),
+                  PrimaryButton(
+                    heightFactor: 0.06,
+                    widthFactor: 0.3,
+                    text: buttonText,
+                    onPressed: () {
+                      if (detailsController.isPhoneVerified.value) return;
+
+                      detailsController.sendOtpToUser(); // handles send & resend internally
+                    },
+                  ),
+                ],
+              );
+            }),
 
 
             AppSpacing.small(context),
-             OtpInputBoxes(
-              onOtpChanged: (otp) {
-                detailsController.otpController.text = otp;
-              },
-            ),
+            Obx(() {
+              if (!detailsController.isOtpSent.value) return SizedBox.shrink();
+
+              return OtpInputBoxes(
+                enabled: !detailsController.isPhoneVerified.value,
+                onOtpChanged: (otp) {
+                  detailsController.otpController.text = otp;
+
+                  // Auto-verify when 4 digits are entered
+                  if (otp.length == 4 && !detailsController.isPhoneVerified.value) {
+                    detailsController.verifyUserOtp();
+                  }
+                },
+              );
+            }),
+
+
 
             AppSpacing.small(context),
             const SectionTitle(title: "Website"),

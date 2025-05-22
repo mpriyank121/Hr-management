@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+
 import '../models/city_state_model.dart';
 
 class LocationService {

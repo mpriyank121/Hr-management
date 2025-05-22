@@ -95,45 +95,95 @@ class CompanyDetailsController extends GetxController {
 
 
   Future<void> registerCompany() async {
-    if (!isPhoneVerified.value) {
-      Get.snackbar("Error", "Please verify your phone number before registering.");
+    // Validate required fields
+    if (orgNameController.text.trim().isEmpty ||
+        industryTypeController.text.trim().isEmpty ||
+        phoneController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        pincodeController.text.trim().isEmpty ||
+        stateController.text.trim().isEmpty ||
+        cityController.text.trim().isEmpty ||
+        addressController.text.trim().isEmpty ||
+        panNumberController.text.trim().isEmpty ||
+        panImage == null ||
+        orgLogo == null) {
+      Get.snackbar("Missing Information", "Please fill in all required fields marked with *.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.orange.withOpacity(0.9),
+        colorText: Colors.white,
+      );
       return;
     }
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/apis.php'),
-    );
 
-    request.fields.addAll({
-      'type': '109a96a98a100a110a111a109a92a111a100a106a105a103',
-      'org_name': orgNameController.text,
-      'industry_type': industryTypeController.text,
-      'phone': EncryptionHelper.encryptString(phoneController.text),
-      'email': EncryptionHelper.encryptString(emailController.text),
-      'pincode': pincodeController.text,
-      'state': stateController.text,
-      'city': cityController.text,
-      'address': addressController.text,
-      'website': websiteController.text,
-      'gst_no': gstNoController.text,
-      'pan_number': panNumberController.text,
-    });
+    if (!isPhoneVerified.value) {
+      Get.snackbar("Phone Not Verified", "Please verify your phone number before registering.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
+      return;
+    }
 
-    if (panImage != null) {
+    try {
+      Get.dialog(
+        const Center(child: CircularProgressIndicator()),
+        barrierDismissible: false,
+      );
+
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/apis.php'),
+      );
+
+      request.fields.addAll({
+        'type': '109a96a98a100a110a111a109a92a111a100a106a105a103',
+        'org_name': orgNameController.text.trim(),
+        'industry_type': industryTypeController.text.trim(),
+        'phone': EncryptionHelper.encryptString(phoneController.text.trim()),
+        'email': EncryptionHelper.encryptString(emailController.text.trim()),
+        'pincode': pincodeController.text.trim(),
+        'state': stateController.text.trim(),
+        'city': cityController.text.trim(),
+        'address': addressController.text.trim(),
+        'website': websiteController.text.trim(),
+        'gst_no': gstNoController.text.trim(),
+        'pan_number': panNumberController.text.trim(),
+      });
+
       request.files.add(await http.MultipartFile.fromPath('pan_image', panImage!.path));
-    }
-
-    if (orgLogo != null) {
       request.files.add(await http.MultipartFile.fromPath('org_logo', orgLogo!.path));
-    }
 
-    http.StreamedResponse response = await request.send();
+      http.StreamedResponse response = await request.send();
 
-    if (response.statusCode == 200) {
-      final responseBody = await response.stream.bytesToString();
-      print('✅ Registration successful: $responseBody');
-    } else {
-      print('❌ Registration failed: ${response.reasonPhrase}');
+      Get.back(); // close loading dialog
+
+      if (response.statusCode == 200) {
+        final responseBody = await response.stream.bytesToString();
+        print('✅ Registration successful: $responseBody');
+
+        Get.snackbar("Success", "Company registered successfully!",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.green.withOpacity(0.8),
+          colorText: Colors.white,
+        );
+
+        // Optionally clear form or navigate away here
+      } else {
+        print('❌ Registration failed: ${response.reasonPhrase}');
+        Get.snackbar("Failed", "Registration failed: ${response.reasonPhrase}",
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red.withOpacity(0.8),
+          colorText: Colors.white,
+        );
+      }
+    } catch (e) {
+      Get.back(); // close loading dialog
+      print('❌ Exception during registration: $e');
+      Get.snackbar("Error", "An error occurred during registration. Please try again.",
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red.withOpacity(0.8),
+        colorText: Colors.white,
+      );
     }
   }
 
@@ -150,8 +200,8 @@ class CompanyDetailsController extends GetxController {
       final encodedPhone = (phone); // Use your encoding method
       final response = await AuthService.sendOtp(encodedPhone);
       if (response['status'] == true) {
-        isPhoneVerified.value = true;
         isOtpSent.value = true;
+        isPhoneVerified.value = false;
         Get.snackbar("Success", response['message'] ?? "OTP sent");
       } else {
         Get.snackbar("Error", response['message'] ?? "Failed to send OTP");

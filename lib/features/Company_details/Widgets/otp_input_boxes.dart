@@ -4,8 +4,10 @@ import '../../../core/widgets/Leave_Container.dart';
 
 class OtpInputBoxes extends StatefulWidget {
   final void Function(String otp) onOtpChanged;
+  final bool enabled; // ✅ Add this line
 
-  const OtpInputBoxes({super.key, required this.onOtpChanged});
+
+  const OtpInputBoxes({super.key, required this.onOtpChanged,this.enabled = true, });
 
   @override
   State<OtpInputBoxes> createState() => _OtpInputBoxesState();
@@ -50,6 +52,7 @@ class _OtpInputBoxesState extends State<OtpInputBoxes> {
           height: 55,
           padding: const EdgeInsets.all(0),
           child: TextField(
+            enabled: widget.enabled,
             controller: controllers[index],
             focusNode: focusNodes[index],
             textAlign: TextAlign.center,
