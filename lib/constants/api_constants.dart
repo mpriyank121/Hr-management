@@ -6,5 +6,7 @@ class ApiConstants {
 
   // Endpoints
   static const String registerCompany = '${baseUrl}apis.php';
+  static const String plans = '${baseUrl}apis.php';
+
 // Add more endpoints as needed
 }

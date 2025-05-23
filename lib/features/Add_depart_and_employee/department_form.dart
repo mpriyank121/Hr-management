@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hr_management/config/App_margin.dart';
 import '../../config/app_spacing.dart';
 import '../../config/font_style.dart';
 import '../../core/widgets/App_bar.dart';
@@ -26,7 +27,7 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
 
         centerTitle: true,
       ),
-      body: Padding(
+      body: AppMargin(child:Padding(
         padding: const EdgeInsets.symmetric(horizontal: 0, vertical: 0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,7 +66,7 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
             Text('Supervisor', style: FontStyles.subHeadingStyle()),
             AppSpacing.small(context) ,
             CustomTextField(
-             hint: 'Priyank',
+              hint: 'Priyank',
             ),
 
             Spacer(),
@@ -82,13 +83,13 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
                 ),
                 SizedBox(width: 12),
                 Expanded(
-                  child: PrimaryButton(text: "Save")
+                    child: PrimaryButton(text: "Save")
                 ),
               ],
             ),
           ],
         ),
-      ),
+      ), ),
       backgroundColor: Colors.white,
     );
   }

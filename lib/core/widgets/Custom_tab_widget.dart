@@ -23,7 +23,7 @@ class CustomTabWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       return Container(
-        margin: const EdgeInsets.symmetric(vertical: 16),
+
         decoration: BoxDecoration(
           color: Colors.grey.shade200,
           borderRadius: BorderRadius.circular(15),

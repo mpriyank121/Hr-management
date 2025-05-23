@@ -1,5 +1,4 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import '../../config/app_spacing.dart';
 import '../../core/widgets/App_bar.dart';
@@ -12,7 +11,6 @@ import '../Company_details/Widgets/upload_card.dart';
 class NewEmployeeForm extends StatelessWidget {
    NewEmployeeForm({super.key});
   File? panImage;
-
 
   @override
   Widget build(BuildContext context) {
