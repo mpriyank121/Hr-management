@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hr_management/config/app_spacing.dart';
 import 'package:hr_management/core/widgets/primary_button.dart';
+import 'package:hr_management/features/Company_details/Company_details_screen.dart';
 import '../model/plan_model.dart'; // Adjust path as needed
 
 class PlanCard extends StatelessWidget {
@@ -55,6 +56,12 @@ class PlanCard extends StatelessWidget {
                Divider( color:Colors.grey.shade300),
               PrimaryButton(
                 onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => CompanyDetailsScreen(),
+                    ),
+                  );
                   // Navigate or handle selection
                 },
                 text: (isMonthly ? 'Subscribe Monthly' : 'Subscribe Yearly'),

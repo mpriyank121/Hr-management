@@ -85,56 +85,8 @@ class OnboardingPage extends StatelessWidget {
                       height: 1.5,
                     ),
                   ),
-                  const Spacer(),
-                  const Divider(thickness: 1, color: Color(0xFFEEEEEE)),
 
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(totalPages, (index) {
-                      final isActive = index == currentPage;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 300),
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
-                        width: isActive ? 16 : 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? Colors.deepOrange
-                              : Colors.grey.shade300,
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 20),
-                  currentPage == totalPages - 1
-                      ? Center(
-                    child: PrimaryButton(
-                      onPressed: onNext,
-                      widthFactor: 0.8,
-                      heightFactor: 0.06,
-                      text: "Continue",
-                    ),
-                  )
-                      : Row(
-                    children: [
-                      PrimaryButton(
-                        textColor: const Color(0xFFF25922),
-                        buttonColor: const Color(0x19CD0909),
-                        widthFactor: 0.4,
-                        heightFactor: 0.06,
-                        text: "Skip",
-                        onPressed: onSkip,
-                      ),
-                      const SizedBox(width: 10),
-                      PrimaryButton(
-                        onPressed: onNext,
-                        widthFactor: 0.4,
-                        heightFactor: 0.06,
-                        text: "Next",
-                      ),
-                    ],
-                  ),
+
 
                 ],
               ),

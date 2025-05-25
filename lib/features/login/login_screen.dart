@@ -1,23 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 
 import '../../config/style.dart';
 import '../../core/widgets/App_bar.dart';
 import '../../core/widgets/primary_button.dart';
+import 'controller/login_controller.dart';
 import 'otp_screen.dart';
 
-
 class LoginScreen extends StatelessWidget {
-  final TextEditingController phoneController = TextEditingController();
-  final bool isLoading;
-  final VoidCallback? onContinue;
+  LoginScreen({super.key});
 
-  LoginScreen({
-    super.key,
-    this.isLoading = false,
-    this.onContinue,
-  });
+  final AuthController authController = Get.put(AuthController());
 
   @override
   Widget build(BuildContext context) {
@@ -55,7 +50,7 @@ class LoginScreen extends StatelessWidget {
 
               /// 📱 Phone Number Input Field
               TextField(
-                controller: phoneController,
+                controller: authController.phoneController,
                 keyboardType: TextInputType.phone,
                 inputFormatters: [
                   LengthLimitingTextInputFormatter(10),
@@ -81,16 +76,22 @@ class LoginScreen extends StatelessWidget {
               const Spacer(),
 
               /// ✅ Continue Button
-              PrimaryButton(text: 'Continue',
-                onPressed: (){
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => OtpPage(phone: 'phone'),
-                    ),
-                  );
-                },
+              PrimaryButton(
+                text: 'Continue',
+                onPressed: () async {
+                  await authController.sendOtpToUser();
 
+                  if (authController.isOtpSent.isTrue) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => OtpPage(
+                          phone: authController.phoneController.text.trim(),
+                        ),
+                      ),
+                    );
+                  }
+                },
               ),
             ],
           ),
