@@ -6,7 +6,7 @@ import '../../../core/widgets/Leave_Container.dart';
 class UploadCard extends StatefulWidget {
   final String title;
   final void Function(File?) onImageSelected;
-  final File? initialImage;
+  final String? initialImage; // URL or local path
 
   const UploadCard({
     super.key,
@@ -22,12 +22,6 @@ class UploadCard extends StatefulWidget {
 class _UploadCardState extends State<UploadCard> {
   File? _selectedImage;
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedImage = widget.initialImage;
-  }
-
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
@@ -40,6 +34,24 @@ class _UploadCardState extends State<UploadCard> {
 
   @override
   Widget build(BuildContext context) {
+    Widget imageWidget;
+
+    if (_selectedImage != null) {
+      // Show picked image
+      imageWidget = Image.file(_selectedImage!, height: 80);
+    } else if (widget.initialImage != null && widget.initialImage!.isNotEmpty) {
+      if (widget.initialImage!.startsWith('http')) {
+        // Show network image
+        imageWidget = Image.network(widget.initialImage!, height: 80);
+      } else {
+        // Show local file image
+        imageWidget = Image.file(File(widget.initialImage!), height: 80);
+      }
+    } else {
+      // Show default upload icon
+      imageWidget = const Icon(Icons.cloud_upload, size: 40, color: Colors.grey);
+    }
+
     return LeaveContainer(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 24),
@@ -47,10 +59,7 @@ class _UploadCardState extends State<UploadCard> {
         onTap: _pickImage,
         child: Column(
           children: [
-            if (_selectedImage != null)
-              Image.file(_selectedImage!, height: 80)
-            else
-              const Icon(Icons.cloud_upload, size: 40, color: Colors.grey),
+            imageWidget,
             const SizedBox(height: 8),
             Text(widget.title),
           ],

@@ -4,7 +4,7 @@ import 'package:image_picker/image_picker.dart';
 
 class CompanyLogoPicker extends StatefulWidget {
   final void Function(File?) onImageSelected;
-  final File? initialImage;
+  final String? initialImage; // This is a URL or local path string
 
   const CompanyLogoPicker({
     Key? key,
@@ -19,22 +19,36 @@ class CompanyLogoPicker extends StatefulWidget {
 class _CompanyLogoPickerState extends State<CompanyLogoPicker> {
   File? _selectedImage;
 
-  @override
-  void initState() {
-    super.initState();
-    _selectedImage = widget.initialImage;
-  }
-
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      setState(() => _selectedImage = File(picked.path));
+      setState(() {
+        _selectedImage = File(picked.path);
+      });
       widget.onImageSelected(_selectedImage);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    ImageProvider displayImage;
+
+    if (_selectedImage != null) {
+      // User picked new image
+      displayImage = FileImage(_selectedImage!);
+    } else if (widget.initialImage != null && widget.initialImage!.isNotEmpty) {
+      if (widget.initialImage!.startsWith('http')) {
+        // initialImage is a URL
+        displayImage = NetworkImage(widget.initialImage!);
+      } else {
+        // initialImage is a local file path
+        displayImage = FileImage(File(widget.initialImage!));
+      }
+    } else {
+      // Fallback default asset image
+      displayImage = const AssetImage("assets/logo.png");
+    }
+
     return Column(
       children: [
         Stack(
@@ -43,9 +57,7 @@ class _CompanyLogoPickerState extends State<CompanyLogoPicker> {
             CircleAvatar(
               radius: 40,
               backgroundColor: Colors.grey.shade200,
-              backgroundImage: _selectedImage != null
-                  ? FileImage(_selectedImage!)
-                  : const AssetImage("assets/logo.png") as ImageProvider,
+              backgroundImage: displayImage,
             ),
             Positioned(
               bottom: 0,

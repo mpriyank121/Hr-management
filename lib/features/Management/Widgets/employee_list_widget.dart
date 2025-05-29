@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../Employees/models/employee_model.dart';
 import '../model/employee_model.dart';
 
 class EmployeeListWidget extends StatelessWidget {
@@ -27,7 +28,7 @@ class EmployeeListWidget extends StatelessWidget {
             employee.name,
             style: TextStyle(fontWeight: FontWeight.bold),
           ),
-          subtitle: Text(employee.role),
+          subtitle: Text(''),
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

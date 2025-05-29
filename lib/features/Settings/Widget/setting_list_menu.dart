@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_management/features/Settings/company_details_edit_screen.dart';
 import '../../../config/font_style.dart';
 import '../../Company_details/Company_details_screen.dart';
 import '../../Holiday_List_Page/holiday_list_screen.dart';
@@ -13,7 +14,7 @@ class MenuListWidget extends StatelessWidget {
       _MenuItem(
         'Company Profile',
         'assets/images/company_profile_icon.png',
-            () => Get.to(() => const CompanyDetailsScreen()),
+            () => Get.to(() =>  CompanyDetailsEditScreen(Phone: '9311289522',)),
       ),
       _MenuItem(
         'Holiday List',

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../core/widgets/App_bar.dart';
+import '../../Employees/models/employee_model.dart';
 import '../model/employee_model.dart';
 import 'employee_list_widget.dart';
 

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import '../../../config/style.dart';
 import '../../../core/widgets/primary_button.dart';
-import 'onboarding_data.dart';
+import '../models/onboarding_page_model.dart';
+
 
 class OnboardingPage extends StatelessWidget {
   final OnboardingPageData data;
@@ -42,11 +43,12 @@ class OnboardingPage extends StatelessWidget {
               ).createShader(bounds);
             },
             blendMode: BlendMode.dstIn,
-            child:Center(child:Image.asset(
-              data.image,
-              height: screenHeight *0.8,
-              width: screenWidth * 0.7
-            ),)
+            child:Center(child:Image.network(data.image,height: screenHeight *0.8,
+                width: screenWidth * 0.7)
+
+              
+
+            )
           ),
         ),
 

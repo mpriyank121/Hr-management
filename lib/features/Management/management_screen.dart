@@ -7,7 +7,7 @@ import '../../core/widgets/App_bar.dart';
 import '../../core/widgets/Department_status_box.dart';
 import '../Attendence/attendence_screen.dart';
 import '../Employees/Widgets/department_employee_list.dart';
-import '../Employees/dummy_data.dart';
+
 import 'Widgets/Star_tile.dart';
 import 'Widgets/bordered_container.dart';
 import 'Widgets/department_widget.dart';
@@ -34,7 +34,7 @@ class ManagementScreen extends StatelessWidget {
       body: AppMargin(child: ListView(
         children: [
           AppSpacing.small(context),
-          _buildStatusSection(context),
+          //_buildStatusSection(context),
           AppSpacing.small(context),
           _attendanceStats( screenHeight),
           AppSpacing.small(context),
@@ -55,48 +55,48 @@ class ManagementScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildStatusSection(BuildContext context) {
-    final allEmployees = DummyData.departmentWiseEmployees.values.expand((e) => e).toList();
-
-    final statusColorMap = {
-      EmployeeStatus.notClockedIn: const Color(0xFFF54336),
-      EmployeeStatus.clockedIn: const Color(0xFF1A96F0),
-      EmployeeStatus.onLeave: const Color(0xFF607D8A),
-    };
-
-    final boxes = <Widget>[];
-
-    for (var status in [EmployeeStatus.clockedIn, EmployeeStatus.notClockedIn, EmployeeStatus.onLeave]) {
-      final filtered = allEmployees.where((e) => e.status == status).toList();
-      if (filtered.isNotEmpty) {
-        boxes.add(
-            DepartmentStatusBox(
-              title: _statusLabel(status),
-              borderColor: statusColorMap[status]!,
-              employees: filtered, // filtered is List<Employee>
-            ));
-
-        }
-    }
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        double spacing = 12;
-        double boxWidth = (constraints.maxWidth - spacing) / 2;
-
-        return Wrap(
-          spacing: spacing,
-          runSpacing: spacing,
-          children: List.generate(boxes.length, (i) {
-            return SizedBox(
-              width: boxWidth,
-              child: boxes[i],
-            );
-          }),
-        );
-      },
-    );
-  }
+  // Widget _buildStatusSection(BuildContext context) {
+  //   final allEmployees = DummyData.departmentWiseEmployees.values.expand((e) => e).toList();
+  //
+  //   final statusColorMap = {
+  //     EmployeeStatus.notClockedIn: const Color(0xFFF54336),
+  //     EmployeeStatus.clockedIn: const Color(0xFF1A96F0),
+  //     EmployeeStatus.onLeave: const Color(0xFF607D8A),
+  //   };
+  //
+  //   final boxes = <Widget>[];
+  //
+  //   for (var status in [EmployeeStatus.clockedIn, EmployeeStatus.notClockedIn, EmployeeStatus.onLeave]) {
+  //     final filtered = allEmployees.where((e) => e.status == status).toList();
+  //     if (filtered.isNotEmpty) {
+  //       boxes.add(
+  //           DepartmentStatusBox(
+  //             title: _statusLabel(status),
+  //             borderColor: statusColorMap[status]!,
+  //             employees: filtered, // filtered is List<Employee>
+  //           ));
+  //
+  //       }
+  //   }
+  //
+  //   return LayoutBuilder(
+  //     builder: (context, constraints) {
+  //       double spacing = 12;
+  //       double boxWidth = (constraints.maxWidth - spacing) / 2;
+  //
+  //       return Wrap(
+  //         spacing: spacing,
+  //         runSpacing: spacing,
+  //         children: List.generate(boxes.length, (i) {
+  //           return SizedBox(
+  //             width: boxWidth,
+  //             child: boxes[i],
+  //           );
+  //         }),
+  //       );
+  //     },
+  //   );
+  // }
 
 
   Widget _attendanceStats(double screenHeight) {
@@ -173,15 +173,15 @@ class ManagementScreen extends StatelessWidget {
     );
 
   }
-  String _statusLabel(EmployeeStatus status) {
-    switch (status) {
-      case EmployeeStatus.notClockedIn:
-        return "Not Clocked In";
-      case EmployeeStatus.clockedIn:
-        return "Clocked In";
-      case EmployeeStatus.onLeave:
-        return "On Leave";
-    }
-  }
+  // String _statusLabel(EmployeeStatus status) {
+  //   switch (status) {
+  //     case EmployeeStatus.notClockedIn:
+  //       return "Not Clocked In";
+  //     case EmployeeStatus.clockedIn:
+  //       return "Clocked In";
+  //     case EmployeeStatus.onLeave:
+  //       return "On Leave";
+  //   }
+  // }
 
 }

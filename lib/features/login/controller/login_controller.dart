@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_management/core/services/auth_service.dart';
 
+import '../../../core/shared_pref_helper_class.dart';
+
 class AuthController extends GetxController {
   final phoneController = TextEditingController();
   final otpController = TextEditingController();
@@ -52,6 +54,7 @@ class AuthController extends GetxController {
       final response = await LoginAuthService.verifyOtp(phone, otp);
       if (response['success'] == true) {
         isPhoneVerified.value = true;
+        await SharedPrefHelper.savePhone(phone);
 
         Get.snackbar("Verified", response['message'] ?? "OTP Verified",
             backgroundColor: Colors.green, colorText: Colors.white);

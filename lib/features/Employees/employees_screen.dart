@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
 import '../../config/App_margin.dart';
 import '../../config/app_spacing.dart';
 import '../../config/font_style.dart';
@@ -12,11 +13,14 @@ import '../Management/Widgets/bordered_container.dart';
 import '../Management/Widgets/employee_clock_screen.dart';
 import '../Management/model/employee_model.dart';
 import 'Widgets/department_employee_list.dart';
-import 'dummy_data.dart';
+import 'controllers/employee_controller.dart';
 import 'employee_detail.dart';
+import 'models/employee_model.dart';
 
 class EmployeesScreen extends StatelessWidget {
-  EmployeesScreen({super.key});
+  EmployeesScreen({Key? key}) : super(key: key);
+
+  final EmployeeController controller = Get.put(EmployeeController());
 
   String _statusToString(EmploymentStatus status) {
     switch (status) {
@@ -28,35 +32,22 @@ class EmployeesScreen extends StatelessWidget {
         return 'Intern';
       case EmploymentStatus.partTime:
         return 'Part-Time';
+      default:
+        return 'Unknown';
+    }
+  }
+
+
+  void _handleMenuSelection(String value) {
+    if (value == 'department') {
+      Get.to(() => AddNewDepartmentScreen(phone: ''));
+    } else if (value == 'employee') {
+      Get.to(() => NewEmployeeForm());
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    void _handleMenuSelection(String value) {
-      if (value == 'department') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => AddNewDepartmentScreen()),
-        );
-      } else if (value == 'employee') {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => NewEmployeeForm()),
-        );
-      }
-    }
-
-    final allEmployees = DummyData.dummyEmployees;
-
-    Map<String, double> statusCount = {};
-    for (var status in EmploymentStatus.values) {
-      final count = allEmployees.where((e) => e.employmentStatus == status).length;
-      if (count > 0) {
-        statusCount[_statusToString(status)] = count.toDouble();
-      }
-    }
-
     final colors = [
       Colors.pink.shade300,
       Colors.blue.shade300,
@@ -68,45 +59,64 @@ class EmployeesScreen extends StatelessWidget {
       appBar: CustomAppBar(
         leading: IconButton(
           icon: SvgPicture.asset('assets/images/bc 3.svg'),
-          onPressed: () {},
+          onPressed: () {
+            // Implement back or drawer logic if needed
+          },
         ),
         title: 'Employees',
         showTrailing: true,
       ),
-      body: AppMargin(child: ListView(
-        children: [
-          AppSpacing.small(context),
-          _buildStatusSection(context),
-          AppSpacing.small(context),
-          BorderedContainer(
-            child: ExpansionTile(
-              title: Text(
-                'Employee Status',
-                style: FontStyles.subHeadingStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              initiallyExpanded: true,
-              children: [
-                BorderedContainer(
-                  child: PieChartWidget(
-                    dataMap: statusCount,
-                    colorList: colors,
-                    centerText: '${allEmployees.length}\nTotal Employees',
-                    chartRadius: 120,
-                    showLegend: true,
-                    showChartValues: false,
+      body: AppMargin(
+        child: Obx(() {
+          // Using Obx to reactively update UI on data changes
+          final allEmployees = controller.employeeList;
+
+          Map<String, double> statusCount = {};
+          for (var status in EmploymentStatus.values) {
+            final count = allEmployees.where((e) => e.employmentStatus == status).length;
+            if (count > 0) {
+              statusCount[_statusToString(status)] = count.toDouble();
+            }
+          }
+
+          return ListView(
+            children: [
+              AppSpacing.small(context),
+              _buildStatusSection(context),
+              AppSpacing.small(context),
+              BorderedContainer(
+                child: ExpansionTile(
+                  title: Text(
+                    'Employee Status',
+                    style: FontStyles.subHeadingStyle(fontSize: 16, fontWeight: FontWeight.bold),
                   ),
+                  initiallyExpanded: true,
+                  children: [
+                    BorderedContainer(
+                      child: PieChartWidget(
+                        dataMap: statusCount,
+                        colorList: colors,
+                        centerText: '${allEmployees.length}\nTotal Employees',
+                        chartRadius: 120,
+                        showLegend: true,
+                        showChartValues: false,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-          AppSpacing.small(context),
-         BorderedContainer(child:  DepartmentEmployeeList(
-           showEditButton: true,
-           onTapRoute: () => EmployeeDetail(title: ''),
-         ),),
-          AppSpacing.small(context),
-        ],
-      )),
+              ),
+              AppSpacing.small(context),
+              BorderedContainer(
+                child: DepartmentEmployeeList(
+                  showEditButton: true,
+                  onTapRoute: () => EmployeeDetail(title: ''),
+                ),
+              ),
+              AppSpacing.small(context),
+            ],
+          );
+        }),
+      ),
       floatingActionButton: FloatingActionButtonWithMenu(
         onMenuItemSelected: _handleMenuSelection,
       ),
@@ -114,12 +124,12 @@ class EmployeesScreen extends StatelessWidget {
   }
 
   Widget _buildStatusSection(BuildContext context) {
-    final departmentMap = DummyData.departmentWiseEmployees;
+    final departmentMap = controller.departmentWiseEmployees;
 
     final Map<String, Color> departmentColors = {
-      'Product': Color(0xFF1A96F0),
-      'Engineering': Color(0xFFF54336),
-      'UI/UX': Color(0xFF4CAF50),
+      'Technical': const Color(0xFF1A96F0),
+      'Marketing': const Color(0xFFF54336),
+      'UI/UX': const Color(0xFF4CAF50),
     };
 
     final boxes = <Widget>[];
@@ -130,7 +140,7 @@ class EmployeesScreen extends StatelessWidget {
         _statusBox(
           department,
           color,
-          employees,
+          employees.cast<Employee>(),
           context,
         ),
       );
@@ -138,8 +148,8 @@ class EmployeesScreen extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        double spacing = 12;
-        double boxWidth = (constraints.maxWidth - spacing) / 2;
+        const double spacing = 12;
+        final double boxWidth = (constraints.maxWidth - spacing) / 2;
 
         return Wrap(
           spacing: spacing,
@@ -154,20 +164,20 @@ class EmployeesScreen extends StatelessWidget {
       },
     );
   }
-
-  Widget _statusBox(String title, Color borderColor, List<Employee> employees, BuildContext context) {
-    int visibleCount = 4;
-    bool showExtra = employees.length > visibleCount;
-    List<Employee> visibleEmployees = showExtra ? employees.sublist(0, visibleCount) : employees;
+  Widget _statusBox(
+      String title,
+      Color borderColor,
+      List<Employee> employees,
+      BuildContext context,
+      ) {
+    const int visibleCount = 4;
+    final bool showExtra = employees.length > visibleCount;
+    final List<Employee> visibleEmployees =
+    showExtra ? employees.sublist(0, visibleCount) : employees;
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ClockInScreen(employees: employees, title: title),
-          ),
-        );
+        Get.to(() => ClockInScreen(employees: employees, title: title));
       },
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -181,15 +191,33 @@ class EmployeesScreen extends StatelessWidget {
           children: [
             Text(
               "$title (${employees.length})",
-              style: FontStyles.subHeadingStyle(fontSize: 14, fontWeight: FontWeight.bold),
+              style: FontStyles.subHeadingStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+              ),
             ),
             AppSpacing.small(context),
             Wrap(
               spacing: 8,
+              runSpacing: 8,
               children: [
                 ...visibleEmployees.map((e) => CircleAvatar(
                   radius: 20,
-                  backgroundImage: NetworkImage(e.avatarUrl),
+                  backgroundColor: Colors.grey.shade200,
+                  backgroundImage: e.avatarUrl.isNotEmpty
+                      ? NetworkImage(e.avatarUrl)
+                      : null,
+                  child: e.avatarUrl.isEmpty
+                      ? Text(
+                    e.name.isNotEmpty
+                        ? e.name[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: Colors.black,
+                    ),
+                  )
+                      : null,
                 )),
                 if (showExtra)
                   CircleAvatar(
@@ -197,7 +225,10 @@ class EmployeesScreen extends StatelessWidget {
                     backgroundColor: Colors.grey.shade300,
                     child: Text(
                       "+${employees.length - visibleCount}",
-                      style: FontStyles.subTextStyle(fontSize: 12, color: Colors.black),
+                      style: FontStyles.subTextStyle(
+                        fontSize: 12,
+                        color: Colors.black,
+                      ),
                     ),
                   ),
               ],
@@ -207,4 +238,5 @@ class EmployeesScreen extends StatelessWidget {
       ),
     );
   }
+
 }

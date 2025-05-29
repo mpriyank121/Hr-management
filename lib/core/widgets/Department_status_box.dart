@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../config/font_style.dart';
+import '../../features/Employees/models/employee_model.dart';
 import '../../features/Management/Widgets/employee_clock_screen.dart';
 import '../../features/Management/model/employee_model.dart';
 
