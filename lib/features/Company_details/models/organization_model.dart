@@ -37,7 +37,7 @@ class OrganizationModel {
     this.orgUrl,
   });
 
-  factory OrganizationModel.fromJson(Map<String, dynamic> json) {
+  factory OrganizationModel.toJson(Map<String, dynamic> json) {
     return OrganizationModel(
       orgName: json['org_name'] ?? '',
       industryType: json['industry_type'] ?? '',

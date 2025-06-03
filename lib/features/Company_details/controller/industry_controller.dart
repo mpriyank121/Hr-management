@@ -1,4 +1,5 @@
 import 'package:get/get.dart';
+import 'package:hr_management/core/widgets/app_toast.dart';
 import '../data/industry_api_service.dart';
 import '../models/industry_model.dart';
 
@@ -14,7 +15,7 @@ class IndustryController extends GetxController {
       final data = await _apiService.fetchIndustries();
       industries.value = data.map((json) => Industry.fromJson(json)).toList();
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      AppToast.show(message: 'Error'  );
     } finally {
       isLoading.value = false;
     }

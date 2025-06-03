@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:hr_management/core/encryption/encryption_helper.dart';
 import 'package:http/http.dart' as http;
 import '../../../core/shared_pref_helper_class.dart';
 import '../models/organization_model.dart';
+import 'package:path/path.dart';
+
 
 class OrganizationService {
   static Future<OrganizationModel?> fetchOrganizationByPhone() async {
@@ -41,7 +44,7 @@ class OrganizationService {
 
         if (jsonResponse['status'] == true && data is List && data.isNotEmpty) {
           print('🏢 Organization found!');
-          return OrganizationModel.fromJson(data[0]);
+          return OrganizationModel.toJson(data[0]);
         } else {
           print('❌ Organization data is empty or not found');
           return null;
@@ -53,6 +56,78 @@ class OrganizationService {
     } catch (e) {
       print('🚨 Exception in fetching organization: $e');
       return null;
+    }
+  }
+  static Future<bool> updateOrganization({
+    required Map<String, dynamic> data,
+    File? orgLogo,
+    File? panImage,
+    required bool isProfileChanged,
+    required bool isPanCardChanged,
+  }) async {
+    final storedPhone = await SharedPrefHelper.getPhone();
+    if (storedPhone == null || storedPhone.isEmpty) {
+      print('⚠️ Phone number not found in SharedPreferences.');
+      return false;
+    }
+
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/home.php'),
+    );
+
+    request.fields.addAll({
+      'type': EncryptionHelper.encryptString('editOrganization'), //
+      'mob': EncryptionHelper.encryptString(storedPhone),
+      'islogochange': isProfileChanged.toString(),
+      'ispanchange': isPanCardChanged.toString(),
+    });
+
+    // Add organization text fields
+    data.forEach((key, value) {
+      if (value != null) {
+        request.fields[key] = value.toString();
+      }
+    });
+
+    // Add org logo file
+    if (orgLogo != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'org_logo',
+        orgLogo.path,
+        filename: basename(orgLogo.path),
+      ));
+    }
+
+    // Add PAN image file
+    if (panImage != null) {
+      request.files.add(await http.MultipartFile.fromPath(
+        'pan_image',
+        panImage.path,
+        filename: basename(panImage.path),
+      ));
+    }
+
+    print('🚀 Sending Update Request...');
+    print('Fields: ${request.fields}');
+    print('Files: Logo - ${orgLogo?.path}, PAN - ${panImage?.path}');
+
+    try {
+      final streamedResponse = await request.send();
+      final response = await http.Response.fromStream(streamedResponse);
+
+      if (response.statusCode == 200) {
+        final responseBody = jsonDecode(response.body);
+        print('✅ Update Response: $responseBody');
+
+        return responseBody['status'] == true;
+      } else {
+        print('❌ Failed with status code: ${response.statusCode}');
+        return false;
+      }
+    } catch (e) {
+      print('🚨 Exception in updating organization: $e');
+      return false;
     }
   }
 }

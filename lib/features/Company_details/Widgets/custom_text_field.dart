@@ -11,6 +11,7 @@ class CustomTextField extends StatelessWidget {
   final Function(String)? onChanged;
   final bool obscureText;
   final bool enabled;
+  final String? Function(String?)? validator;
 
   const CustomTextField({
     Key? key,
@@ -22,6 +23,7 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.initialValue,
     this.enabled = true,
+    this.validator
   }) : super(key: key);
 
   @override

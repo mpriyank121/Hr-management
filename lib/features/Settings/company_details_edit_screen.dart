@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_management/core/encryption/encryption_helper.dart';
+import 'package:hr_management/features/Company_details/data/organization_service.dart';
 import '../../config/app_spacing.dart';
 import '../../core/widgets/App_bar.dart';
 import '../../core/widgets/Company_logo_picker.dart';
@@ -12,7 +14,7 @@ import '../Company_details/Widgets/upload_card.dart';
 import '../Company_details/controller/company_details_controller.dart';
 import '../Company_details/controller/industry_controller.dart';
 import '../Company_details/controller/organization_controller.dart';
-import '../Company_details/data/city_state_api_service.dart';
+
 
 class CompanyDetailsEditScreen extends StatefulWidget {
   final String Phone;
@@ -39,6 +41,13 @@ class _CompanyDetailsEditScreenState extends State<CompanyDetailsEditScreen> {
   late TextEditingController websiteController;
   late TextEditingController gstNoController;
   late TextEditingController panNumberController;
+  late Map<String, dynamic> _originalOrgData;
+  File? _initialLogoFile;
+  File? _initialPanFile;
+  String? selectedStateId;
+  String? selectedCityId;
+
+
 
   TextEditingController? stateController;
   TextEditingController? cityController;
@@ -77,23 +86,30 @@ class _CompanyDetailsEditScreenState extends State<CompanyDetailsEditScreen> {
           websiteController.text = org.website;
           gstNoController.text = org.gstNo;
           panNumberController.text = org.panNumber;
+          selectedStateId = org.stateId;
+          selectedCityId = org.cityId;
         });
-        if (org.pincode.isNotEmpty && org.pincode.length == 6) {
-          final result = await LocationService.fetchCityStateFromPincode(org.pincode);
-          if (result != null) {
-            setState(() {
-              // Only overwrite if the fields are empty
-              if ((org.state ?? '').isEmpty) {
-                stateController!.text = result.state ?? '';
-              }
-              if ((org.city ?? '').isEmpty) {
-                cityController!.text = result.city ?? '';
-              }
-            });
-          }
-        }
 
+        // Save original values for comparison
+        _originalOrgData = {
+          'orgName': org.orgName,
+          'industryType': org.industryType,
+          'address': org.address,
+          'pincode': org.pincode,
+          'state': org.stateId,
+          'city': org.cityId,
+          'email': org.email,
+          'phone': org.phone,
+          'website': org.website,
+          'gstNo': org.gstNo,
+          'panNumber': org.panNumber,
+        };
+
+        // Save original image URLs
+        _initialLogoFile = null; // Because initial is a URL
+        _initialPanFile = null;
       }
+
     });
   }
 
@@ -110,25 +126,56 @@ class _CompanyDetailsEditScreenState extends State<CompanyDetailsEditScreen> {
     super.dispose();
   }
 
-  void onSavePressed() {
+  Future<void> onSavePressed() async {
     final updatedOrg = {
-      'orgName': orgNameController.text.trim(),
-      'industryType': selectedIndustryId,
+      'org_name': orgNameController.text.trim(),
+      'industry_type': selectedIndustryId,
       'address': addressController.text.trim(),
       'pincode': pincodeController.text.trim(),
-      'state': stateController?.text.trim(),
-      'city': cityController?.text.trim(),
+      'state': selectedStateId ?? '',
+      'city': selectedCityId ?? '',
       'email': emailController.text.trim(),
       'phone': phoneController.text.trim(),
       'website': websiteController.text.trim(),
-      'gstNo': gstNoController.text.trim(),
-      'panNumber': panNumberController.text.trim(),
+      'gst_no': gstNoController.text.trim(),
+      'pan_number': panNumberController.text.trim(),
+      'pan_image': detailsController.panImageUrl,
+      'org_logo': detailsController.orgLogoUrl,
     };
 
-    print('Updated Organization Data: $updatedOrg');
+    // Check if any profile field has changed
 
-    // TODO: Call update API or method here
+    bool isProfileChanged = detailsController.orgLogo != null &&
+        (detailsController.orgLogoUrl != _originalOrgData['org_logo']);
+
+    bool isPanCardChanged = detailsController.panImage != null &&
+        (detailsController.panImageUrl != _originalOrgData['pan_image']);
+
+    final payload = {
+      ...updatedOrg,
+      'islogochange': isProfileChanged ? true : false,
+      'ispanchange': isPanCardChanged ? true : false,
+      'org_logo': isProfileChanged ? detailsController.orgLogoUrl : '',
+      'pan_image': isPanCardChanged ? detailsController.panImageUrl : '',
+    };
+
+    print('Final Payload: $payload');
+
+    await OrganizationService.updateOrganization(
+      data: {
+        ...updatedOrg,
+        'mob': EncryptionHelper.encryptString(phoneController.text.trim()),
+      },
+      isProfileChanged: isProfileChanged,
+      isPanCardChanged: isPanCardChanged,
+      orgLogo: isProfileChanged ? detailsController.orgLogo : null,
+      panImage: isPanCardChanged ? detailsController.panImage : null,
+    );
   }
+
+
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -207,8 +254,12 @@ class _CompanyDetailsEditScreenState extends State<CompanyDetailsEditScreen> {
                       setState(() {
                         stateController?.text = fetchedState;
                         cityController?.text = fetchedCity;
+
+                        selectedStateId = detailsController.stateId;  // <-- Make sure this is set
+                        selectedCityId = detailsController.cityId;    // <-- Make sure this is set
                       });
                     }
+
                   }
                 },
               ),

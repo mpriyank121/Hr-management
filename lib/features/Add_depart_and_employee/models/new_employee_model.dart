@@ -7,11 +7,12 @@ class NewEmployeeModel {
   final String departmentId;
   final String gender;
   final String positionId;
-  final String website;
+  final String EmployeeCode;
   final String empTypeId;
   final String? panFilePath;
   final String? date;
-  final String? profilePath;// Nullable for optional upload
+  final String? profilePath;
+  final String? UserRoleId;
 
   NewEmployeeModel({
     required this.empName,
@@ -20,10 +21,11 @@ class NewEmployeeModel {
     required this.departmentId,
     required this.gender,
     required this.positionId,
-    required this.website,
+    required this.EmployeeCode,
     required this.empTypeId,
     this.panFilePath,
     required this.date,
     this.profilePath,
+    this.UserRoleId
   });
 }

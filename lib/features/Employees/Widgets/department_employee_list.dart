@@ -10,11 +10,13 @@ import '../controllers/employee_controller.dart';
 class DepartmentEmployeeList extends StatelessWidget {
   final bool showEditButton;
   final Widget Function()? onTapRoute;
+  final String? empId;
 
   const DepartmentEmployeeList({
     Key? key,
     this.showEditButton = false,
     this.onTapRoute,
+    this.empId
   }) : super(key: key);
 
   @override
@@ -75,10 +77,11 @@ class DepartmentEmployeeList extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => NewEmployeeForm(),
+                          builder: (context) => NewEmployeeForm(empId: employee.id),
                         ),
                       );
                     },
+
                   )
                       : Column(
                     mainAxisAlignment: MainAxisAlignment.center,
