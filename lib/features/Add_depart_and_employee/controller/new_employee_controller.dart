@@ -9,6 +9,8 @@ class NewEmployeeController extends GetxController {
   var employee = Rxn<NewEmployeeModel>(); // nullable reactive employee model
   var isLoading = false.obs;
   var errorMessage = ''.obs;
+
+
   Future<void> submitNewEmployee(NewEmployeeModel model) async {
     try {
       isSubmitting.value = true;
@@ -44,10 +46,54 @@ class NewEmployeeController extends GetxController {
       isLoading.value = false;
     }
   }
+  Future<void> updateCurrentEmployee(String empId, NewEmployeeModel model) async {
+    if (empId.isEmpty) {
+      errorMessage.value = 'Employee ID is missing';
+      return;
+    }
+
+    try {
+      isSubmitting.value = true;
+      submissionMessage.value = '';
+
+      final result = await NewEmployeeService.updateEmployee(
+        model,
+        empId,
+        isProfileChanged: isProfileChanged,
+        isPanCardChanged: isPanCardChanged,
+      );
+
+      if (result) {
+        submissionMessage.value = 'Employee updated successfully!';
+        Get.back(); // Optionally close or navigate back
+      } else {
+        submissionMessage.value = 'Failed to update employee.';
+      }
+    } catch (e) {
+      submissionMessage.value = 'Error: $e';
+    } finally {
+      isSubmitting.value = false;
+    }
+  }
+
+
 
   /// Clear employee data (for adding new employee)
   void clearEmployee() {
     employee.value = null;
     errorMessage.value = '';
   }
+  bool get isProfileChanged {
+    final original = employee.value?.originalProfilePath;
+    final current = employee.value?.profilePath;
+    return original != null && current != null && original != current;
+  }
+
+  bool get isPanCardChanged {
+    final original = employee.value?.originalPanFilePath;
+    final current = employee.value?.panFilePath;
+    return original != null && current != null && original != current;
+  }
+
 }
+

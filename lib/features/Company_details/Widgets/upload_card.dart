@@ -6,7 +6,7 @@ import '../../../core/widgets/Leave_Container.dart';
 class UploadCard extends StatefulWidget {
   final String title;
   final void Function(File?) onImageSelected;
-  final String? initialImage; // URL or local path
+  final String? initialImage; // URL or file path
 
   const UploadCard({
     super.key,
@@ -22,13 +22,29 @@ class UploadCard extends StatefulWidget {
 class _UploadCardState extends State<UploadCard> {
   File? _selectedImage;
 
+  @override
+  void initState() {
+    super.initState();
+
+    // If initialImage is a local file path, convert it to a File object
+    if (widget.initialImage != null &&
+        widget.initialImage!.isNotEmpty &&
+        !widget.initialImage!.startsWith('http')) {
+      final file = File(widget.initialImage!);
+      if (file.existsSync()) {
+        _selectedImage = file;
+      }
+    }
+  }
+
   Future<void> _pickImage() async {
     final picked = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (picked != null) {
+      final file = File(picked.path);
       setState(() {
-        _selectedImage = File(picked.path);
+        _selectedImage = file;
       });
-      widget.onImageSelected(_selectedImage);
+      widget.onImageSelected(file);
     }
   }
 
@@ -37,18 +53,17 @@ class _UploadCardState extends State<UploadCard> {
     Widget imageWidget;
 
     if (_selectedImage != null) {
-      // Show picked image
-      imageWidget = Image.file(_selectedImage!, height: 80);
+      imageWidget = Image.file(_selectedImage!, height: 100, fit: BoxFit.cover);
     } else if (widget.initialImage != null && widget.initialImage!.isNotEmpty) {
       if (widget.initialImage!.startsWith('http')) {
-        // Show network image
-        imageWidget = Image.network(widget.initialImage!, height: 80);
+        imageWidget = Image.network(widget.initialImage!, height: 100, fit: BoxFit.cover);
       } else {
-        // Show local file image
-        imageWidget = Image.file(File(widget.initialImage!), height: 80);
+        final file = File(widget.initialImage!);
+        imageWidget = file.existsSync()
+            ? Image.file(file, height: 100, fit: BoxFit.cover)
+            : const Icon(Icons.cloud_upload, size: 40, color: Colors.grey);
       }
     } else {
-      // Show default upload icon
       imageWidget = const Icon(Icons.cloud_upload, size: 40, color: Colors.grey);
     }
 
@@ -58,10 +73,17 @@ class _UploadCardState extends State<UploadCard> {
       child: InkWell(
         onTap: _pickImage,
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            imageWidget,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8),
+              child: imageWidget,
+            ),
             const SizedBox(height: 8),
-            Text(widget.title),
+            Text(
+              widget.title,
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+            ),
           ],
         ),
       ),

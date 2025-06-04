@@ -39,13 +39,7 @@ class EmployeeController extends GetxController {
   }
 
   /// Update employee
-  void updateEmployee(Employee updatedEmployee) {
-    final index = employeeList.indexWhere((emp) => emp.id == updatedEmployee.id);
-    if (index != -1) {
-      employeeList[index] = updatedEmployee;
-      employeeList.refresh(); // Trigger UI update
-    }
-  }
+
 
   /// Add new employee
   void addEmployee(Employee newEmployee) {

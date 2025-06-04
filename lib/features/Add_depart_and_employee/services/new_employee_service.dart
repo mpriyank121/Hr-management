@@ -39,7 +39,7 @@ class NewEmployeeService {
       }
       if (employee.profilePath != null && File(employee.profilePath!).existsSync()) {
         request.files.add(
-          await http.MultipartFile.fromPath('profile', employee.profilePath!),
+          await http.MultipartFile.fromPath('profile_image', employee.profilePath!),
         );
       }
 
@@ -90,8 +90,12 @@ class NewEmployeeService {
     return null;
   }
 
-
-  static Future<bool> updateEmployee(NewEmployeeModel employee, String empId) async {
+  static Future<bool> updateEmployee(
+      NewEmployeeModel employee,
+      String empId, {
+        required bool isProfileChanged,
+        required bool isPanCardChanged,
+      }) async {
     try {
       final storedPhone = await SharedPrefHelper.getPhone();
 
@@ -101,12 +105,12 @@ class NewEmployeeService {
       );
 
       request.fields.addAll({
-        'type': "", // Update employee
-        'mob': EncryptionHelper.encryptString(storedPhone!),
-        'emp_id': empId,
+        'type': EncryptionHelper.encryptString("editEmployee"),
+        'mob': EncryptionHelper.encryptString(storedPhone ?? ''),
+        'emp_id': EncryptionHelper.encryptString(empId),
         'emp_name': employee.empName,
-        'phone': employee.phone,
-        'email': employee.email,
+        'emp_phone': employee.phone,
+        'emp_email': employee.email,
         'department': employee.departmentId,
         'gender': employee.gender,
         'position': employee.positionId,
@@ -114,29 +118,49 @@ class NewEmployeeService {
         'emp_type': employee.empTypeId,
         'doj': employee.date ?? '',
         'user_role': employee.UserRoleId ?? '',
+        'isprofilechange': isProfileChanged.toString(),
+        'ispanchange': isPanCardChanged.toString(),
       });
 
-      if (employee.panFilePath != null && File(employee.panFilePath!).existsSync()) {
-        request.files.add(await http.MultipartFile.fromPath('pan', employee.panFilePath!));
+      // Add PAN image file if changed
+      if (isPanCardChanged &&
+          employee.panFilePath != null &&
+          File(employee.panFilePath!).existsSync()) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'pan_image',
+          employee.panFilePath!,
+        ));
       }
-      if (employee.profilePath != null && File(employee.profilePath!).existsSync()) {
-        request.files.add(await http.MultipartFile.fromPath('profile', employee.profilePath!));
+
+      // Add profile image file if changed
+      if (isProfileChanged &&
+          employee.profilePath != null &&
+          File(employee.profilePath!).existsSync()) {
+        request.files.add(await http.MultipartFile.fromPath(
+          'profile_image',
+          employee.profilePath!,
+        ));
       }
+
+      print('🔄 Submitting employee update...');
+      print('Fields: ${request.fields}');
+      print('Files: PAN - ${employee.panFilePath}, Profile - ${employee.profilePath}');
 
       final response = await request.send();
 
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
         final decoded = jsonDecode(responseBody);
-        print('[DEBUG] Update Employee Response: $decoded');
+        print('[✅] Update Employee Response: $decoded');
         return decoded['status'] == true;
       } else {
-        print('[ERROR] HTTP ${response.statusCode}: ${response.reasonPhrase}');
+        print('[❌] HTTP ${response.statusCode}: ${response.reasonPhrase}');
         return false;
       }
     } catch (e) {
-      print('[EXCEPTION] $e');
+      print('[🚨 EXCEPTION] $e');
       return false;
     }
   }
+
 }

@@ -41,7 +41,7 @@ class EmployeeDetailModel {
       email: json['email'] ?? '',
       gender: json['gender'] ?? '',
       departmentId: json['department']?.toString() ?? '',
-      departmentName: json['department_name'] ?? '', // optional, not in response
+      departmentName: json['department'] ?? '', // optional, not in response
       positionId: json['position']?.toString() ?? '',
       positionName: json['position_name'] ?? '', // optional, not in response
       employeeCode: json['emp_code'] ?? '',

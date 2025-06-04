@@ -158,9 +158,7 @@ class _CompanyDetailsEditScreenState extends State<CompanyDetailsEditScreen> {
       'org_logo': isProfileChanged ? detailsController.orgLogoUrl : '',
       'pan_image': isPanCardChanged ? detailsController.panImageUrl : '',
     };
-
     print('Final Payload: $payload');
-
     await OrganizationService.updateOrganization(
       data: {
         ...updatedOrg,
@@ -172,11 +170,6 @@ class _CompanyDetailsEditScreenState extends State<CompanyDetailsEditScreen> {
       panImage: isPanCardChanged ? detailsController.panImage : null,
     );
   }
-
-
-
-
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

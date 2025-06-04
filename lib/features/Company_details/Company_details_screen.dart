@@ -92,7 +92,12 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
               hint: "6-digit PIN",
               keyboardType: TextInputType.number,
               controller: detailsController.pincodeController,
-              onChanged: detailsController.onPincodeChanged,
+              onChanged: (pin) async {
+                detailsController.userManuallyChangedPincode.value = true;
+                if (pin.length == 6) {
+                  await detailsController.onPincodeChanged(pin);
+                }
+              },
             ),
 
             AppSpacing.small(context),

@@ -13,6 +13,10 @@ class NewEmployeeModel {
   final String? date;
   final String? profilePath;
   final String? UserRoleId;
+  final String? empId;
+  String? originalProfilePath;    // Server-fetched path
+  String? originalPanFilePath;
+
 
   NewEmployeeModel({
     required this.empName,
@@ -26,6 +30,9 @@ class NewEmployeeModel {
     this.panFilePath,
     required this.date,
     this.profilePath,
-    this.UserRoleId
+    this.UserRoleId,
+    this.empId,
+    this.originalPanFilePath,
+    this.originalProfilePath
   });
 }

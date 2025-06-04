@@ -62,29 +62,4 @@ class EmployeeService {
     }
   }
 
-  /// 📝 Update employee details
-  static Future<bool> updateEmployeeData(Employee employee) async {
-    try {
-      final storedPhone = await SharedPrefHelper.getPhone();
-      print('📞 Phone from SharedPreferences: $storedPhone');
-
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/home.php'),
-      );
-
-      request.fields.addAll({
-        'emp_id': EncryptionHelper.encryptString(employee.id),
-        // Add more fields and encrypt them if needed
-      });
-
-      http.StreamedResponse response = await request.send();
-      final resString = await response.stream.bytesToString();
-      final data = jsonDecode(resString);
-
-      return data['status'] == true;
-    } catch (e) {
-      throw Exception('Error updating employee data: $e');
-    }
-  }
 }

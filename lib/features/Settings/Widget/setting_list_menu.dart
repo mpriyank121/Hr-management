@@ -19,7 +19,7 @@ class MenuListWidget extends StatelessWidget {
       _MenuItem(
         'Holiday List',
         'assets/images/holiday_list_icon.png',
-            () => Get.to(() => holidaypage(title: '')),
+            () => Get.to(() => HolidayPage(title: '')),
       ),
       _MenuItem(
         'Leave Request',

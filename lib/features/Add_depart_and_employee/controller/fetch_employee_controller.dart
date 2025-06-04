@@ -33,4 +33,5 @@ class FetchEmployeeController extends GetxController {
     fetchEmployee.value = null;
     errorMessage.value = '';
   }
+
 }

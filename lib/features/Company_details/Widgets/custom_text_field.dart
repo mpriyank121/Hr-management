@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../config/font_style.dart';
 import '../../../core/widgets/Leave_Container.dart';
 
@@ -12,6 +13,7 @@ class CustomTextField extends StatelessWidget {
   final bool obscureText;
   final bool enabled;
   final String? Function(String?)? validator;
+  final List<TextInputFormatter>? inputFormatters;
 
   const CustomTextField({
     Key? key,
@@ -23,13 +25,15 @@ class CustomTextField extends StatelessWidget {
     this.obscureText = false,
     this.initialValue,
     this.enabled = true,
-    this.validator
+    this.validator,
+    this.inputFormatters
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return LeaveContainer(
       child: TextField(
+        inputFormatters: inputFormatters,
         controller: controller,
         keyboardType: keyboardType,
         obscureText: obscureText,
