@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_management/config/App_margin.dart';
 import 'package:hr_management/core/widgets/Company_logo_picker.dart';
+import 'package:hr_management/core/widgets/custom_dropdown.dart';
 import 'package:hr_management/features/Add_depart_and_employee/controller/job_type_controller.dart';
 import 'package:hr_management/features/Add_depart_and_employee/models/job_type_model.dart';
 import 'package:image_picker/image_picker.dart';
@@ -270,6 +271,7 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
               children: [
                 AppSpacing.small(context),
                 CompanyLogoPicker(
+                  title: "Employee Profile",
                   initialImage: profileImage != null
                       ? profileImage!.path
                       : profileImageUrl,
@@ -295,11 +297,8 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
                 AppSpacing.small(context),
                 Obx(() {
                   return LeaveContainer(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: DropdownButtonFormField<Position>(
+                    child: CustomDropdown<Position>(
                       value: positionController.selectedPosition.value,
-                      hint: const Text('Select Position'),
-                      isExpanded: true,
                       items: positionController.positions.map((position) {
                         return DropdownMenuItem<Position>(
                           value: position,
@@ -310,67 +309,63 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
                         positionController.selectPosition(val);
                         _checkFormModification();
                       },
-                      validator: (value) =>
-                      value == null ? 'Position is required' : null,
+                      decoration: const InputDecoration(
+                        hintText: 'Select Position',
+                        border: InputBorder.none,
+                      ),
                     ),
                   );
                 }),
-
                 AppSpacing.small(context),
                 const SectionTitle(title: "Employment Type"),
-                Obx(() {
-                  return LeaveContainer(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: DropdownButtonFormField<JobType>(
-                      value: jobTypeController.selectedJobType.value,
-                      hint: const Text('Select Job Type'),
-                      isExpanded: true,
-                      items: jobTypeController.jobTypes.map((jobType) {
-                        return DropdownMenuItem<JobType>(
-                          value: jobType,
-                          child: Text(jobType.type),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        jobTypeController.selectJobType(val);
-                        _checkFormModification();
-                      },
-                      validator: (value) =>
-                      value == null ? 'Job type is required' : null,
+                AppSpacing.small(context),
+              Obx(() {
+                return LeaveContainer(
+                  child: CustomDropdown<JobType>(
+                    value: jobTypeController.selectedJobType.value,
+                    items: jobTypeController.jobTypes.map((jobType) {
+                      return DropdownMenuItem<JobType>(
+                        value: jobType,
+                        child: Text(jobType.type),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      jobTypeController.selectJobType(val);
+                      _checkFormModification();
+                    },
+                    decoration: const InputDecoration(
+                      hintText: 'Select Job Type',
+                      border: InputBorder.none,
                     ),
-                  );
-                }),
+                  ),
+                );
+              }),
 
                 AppSpacing.small(context),
                 const SectionTitle(title: "User Role"),
+                AppSpacing.small(context),
                 LeaveContainer(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Obx(
-                        () => DropdownButtonFormField<String>(
-                      value: selectedUserRole.value.isEmpty
-                          ? null
-                          : selectedUserRole.value,
-                      hint: const Text("Select Role"),
-                      isExpanded: true,
-                      items: roleMap.keys.map((roleName) {
-                        return DropdownMenuItem<String>(
-                          value: roleName,
-                          child: Text(roleName),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        selectedUserRole.value = val!;
-                        _checkFormModification();
-                      },
-                      validator: (val) => val == null || val.isEmpty
-                          ? 'User Role is required'
-                          : null,
+                  child: Obx(() => CustomDropdown<String>(
+                    value: selectedUserRole.value.isEmpty ? null : selectedUserRole.value,
+                    items: roleMap.keys.map((roleName) {
+                      return DropdownMenuItem<String>(
+                        value: roleName,
+                        child: Text(roleName),
+                      );
+                    }).toList(),
+                    onChanged: (val) {
+                      selectedUserRole.value = val ?? '';
+                      _checkFormModification();
+                    },
+                    decoration: const InputDecoration(
+                      hintText: "Select Role",
+                      border: InputBorder.none,
                     ),
-                  ),
+                  )),
                 ),
-
                 AppSpacing.small(context),
                 const SectionTitle(title: "Employee Code"),
+                AppSpacing.small(context),
                 CustomTextField(
                   hint: "Employee Code",
                   controller: employeeCodeController,
@@ -378,16 +373,14 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
 
                 AppSpacing.small(context),
                 const SectionTitle(title: "Department"),
+                AppSpacing.small(context),
                 Obx(() {
                   if (departmentController.isLoading.value) {
                     return const CircularProgressIndicator();
                   } else {
                     return LeaveContainer(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: DropdownButtonFormField<DepartmentModel>(
+                      child: CustomDropdown<DepartmentModel>(
                         value: departmentController.selectedDepartment.value,
-                        hint: const Text('Select Department'),
-                        isExpanded: true,
                         items: departmentController.departmentList.map((dept) {
                           return DropdownMenuItem<DepartmentModel>(
                             value: dept,
@@ -398,25 +391,24 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
                           departmentController.selectDepartment(val);
                           _checkFormModification();
                         },
-                        validator: (value) =>
-                        value == null ? 'Department is required' : null,
+                        decoration: const InputDecoration(
+                          hintText: 'Select Department',
+                          border: InputBorder.none,
+                        ),
                       ),
                     );
                   }
                 }),
-
                 AppSpacing.small(context),
                 const SectionTitle(title: "Gender"),
                 AppSpacing.small(context),
                 LeaveContainer(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Obx(
-                        () => DropdownButtonFormField<String>(
+                        () => CustomDropdown<String>(
                       value: selectedGender.value.isEmpty
                           ? null
                           : selectedGender.value,
-                      hint: const Text("Select Gender"),
-                      isExpanded: true,
                       items: ["Male", "Female", "Other"].map((gender) {
                         return DropdownMenuItem<String>(
                           value: gender,
@@ -427,15 +419,15 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
                         selectedGender.value = val!;
                         _checkFormModification();
                       },
-                      validator: (val) => val == null || val.isEmpty
-                          ? 'Gender is required'
-                          : null,
+                      // validator: (val) => val == null || val.isEmpty
+                      //     ? 'Gender is required'
+                      //     : null,
                     ),
                   ),
                 ),
-
                 AppSpacing.small(context),
                 const SectionTitle(title: "Phone Number"),
+                AppSpacing.small(context),
                 CustomTextField(
                   hint: "Enter Number",
                   controller: phoneController,
@@ -450,6 +442,7 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
 
                 AppSpacing.small(context),
                 const SectionTitle(title: "Email"),
+                AppSpacing.small(context),
                 CustomTextField(
                   hint: "example@gmail.com",
                   controller: emailController,
@@ -468,7 +461,7 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
 
                 AppSpacing.small(context),
                 const SectionTitle(title: "Employee Identification Document"),
-
+                AppSpacing.small(context),
                 UploadCard(
                   title: "Upload your PAN card",
                   onImageSelected: (file) {
@@ -482,6 +475,7 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
 
                 AppSpacing.small(context),
                 const SectionTitle(title: "Start Date of Employment"),
+                AppSpacing.small(context),
                 GestureDetector(
                   onTap: () async {
                     DateTime? picked = await showDatePicker(
@@ -507,7 +501,7 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
                   ),
                 ),
 
-                AppSpacing.medium(context),
+                AppSpacing.small(context),
                 // Dynamic Button Row based on form state
                 // Move the empId check outside Obx
                 widget.empId != null

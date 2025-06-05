@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/app_text_styles.dart';
 import '../../Employees/models/employee_model.dart';
 import '../model/employee_model.dart';
 
@@ -14,25 +15,29 @@ class EmployeeListWidget extends StatelessWidget {
       shrinkWrap: true,
       physics: NeverScrollableScrollPhysics(),
       itemCount: employees.length,
-      separatorBuilder: (_, __) => SizedBox(height: 12),
+      separatorBuilder: (_, __) => SizedBox(height: 8),
       itemBuilder: (context, index) {
         final employee = employees[index];
         return ListTile(
-
-          contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           leading: CircleAvatar(
-            radius: 25,
-            backgroundImage: AssetImage(employee.avatarUrl),
+            backgroundImage: NetworkImage(employee.avatarUrl),
           ),
-          title: Text(
-            employee.name,
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          subtitle: Text(''),
+          title:Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                employee.name,
+                style:  TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                  employee.position,
+                  style: AppTextStyles.subText)
+
+            ],),
+
           trailing: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-
               SizedBox(width: 8),
               Icon(Icons.chevron_right, color: Colors.black),
             ],

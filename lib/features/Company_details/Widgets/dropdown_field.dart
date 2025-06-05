@@ -1,34 +1,47 @@
 import 'package:flutter/material.dart';
-import '../../../core/widgets/Leave_Container.dart';
+import '../../../core/widgets/custom_dropdown.dart'; // Your custom dropdown widget import
 
-class DropdownField extends StatelessWidget {
-  final List<DropdownMenuItem<String>>? items;
-  final void Function(String?)? onChanged;
-  final String? hintText;
-  final String? value;
+class CustomDropdownFormField<T> extends FormField<T> {
+  final List<DropdownMenuItem<T>> items;
+  final InputDecoration decoration;
 
+  CustomDropdownFormField({
+    Key? key,
+    required T? initialValue,
+    required this.items,
+    required void Function(T?)? onChanged,
+    String? Function(T?)? validator,
+    this.decoration = const InputDecoration(),
+    AutovalidateMode autovalidateMode = AutovalidateMode.disabled,
+    bool enabled = true,
+  }) : super(
+    key: key,
+    initialValue: initialValue,
+    validator: validator,
+    autovalidateMode: autovalidateMode,
+    enabled: enabled,
+    builder: (FormFieldState<T> field) {
+      void onChangedHandler(T? newValue) {
+        field.didChange(newValue);
+        if (onChanged != null) onChanged(newValue);
+      }
 
-  const DropdownField({
-    super.key,
-    this.items,
-    this.onChanged,
-    this.hintText,
-    this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return LeaveContainer(
-      child: DropdownButtonFormField<String>(
-        value: value,
-        items: items,
-        onChanged: onChanged,
-        decoration: InputDecoration(
-          hintText: hintText ?? 'Select Option',
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-        ),
-      ),
-    );
-  }
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          IgnorePointer(
+            ignoring: !enabled,
+            child: CustomDropdown<T>(
+              value: field.value,
+              items: items,
+              onChanged: onChangedHandler,
+              decoration: decoration.copyWith(
+                errorText: field.errorText,
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

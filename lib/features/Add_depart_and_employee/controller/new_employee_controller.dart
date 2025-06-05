@@ -1,5 +1,4 @@
 import 'package:get/get.dart';
-import '../../Employees/service/employee_service.dart';
 import '../models/new_employee_model.dart';
 import '../services/new_employee_service.dart';
 
@@ -9,8 +8,6 @@ class NewEmployeeController extends GetxController {
   var employee = Rxn<NewEmployeeModel>(); // nullable reactive employee model
   var isLoading = false.obs;
   var errorMessage = ''.obs;
-
-
   Future<void> submitNewEmployee(NewEmployeeModel model) async {
     try {
       isSubmitting.value = true;
@@ -75,9 +72,6 @@ class NewEmployeeController extends GetxController {
       isSubmitting.value = false;
     }
   }
-
-
-
   /// Clear employee data (for adding new employee)
   void clearEmployee() {
     employee.value = null;

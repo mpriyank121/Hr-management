@@ -39,12 +39,14 @@ class CustomTextField extends StatelessWidget {
         obscureText: obscureText,
         onChanged: onChanged,
         enabled: enabled,
+        style: FontStyles.subHeadingStyle(),
+
         decoration: InputDecoration(
-          prefixIcon: icon != null ? Icon(icon, size: 20) : null,
+          prefixIcon: icon != null ? Icon(icon, size: 16) : null,
           hintText: hint,
           hintStyle: FontStyles.subTextStyle(),
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+          contentPadding: const EdgeInsets.symmetric(vertical: 8),
         ),
       ),
     );

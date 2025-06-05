@@ -42,6 +42,7 @@ dependencies:
   get: ^4.6.6
   flutter_background_service: ^5.0.2
 
+
   # ✅ Add this here under dependencies
 
   # The following adds the Cupertino Icons font to your application.

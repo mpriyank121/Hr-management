@@ -8,6 +8,7 @@ class PieChartWidget extends StatelessWidget {
   final double chartRadius;
   final bool showLegend;
   final bool showChartValues;
+  final TextStyle centerTextStyle;
   final double ringStrokeWidth;
 
   const PieChartWidget({
@@ -18,7 +19,7 @@ class PieChartWidget extends StatelessWidget {
     this.chartRadius = 100,
     this.showLegend = true,
     this.showChartValues = true,
-    this.ringStrokeWidth = 20,
+    this.ringStrokeWidth = 20, required ChartType chartType, required this.centerTextStyle,
   }) : super(key: key);
 
   @override
@@ -29,13 +30,16 @@ class PieChartWidget extends StatelessWidget {
       chartRadius: chartRadius,
       chartType: ChartType.ring,
       ringStrokeWidth: ringStrokeWidth,
+
       baseChartColor: Colors.transparent,
       centerText: centerText,
+      centerTextStyle: centerTextStyle,
       legendOptions: LegendOptions(
         showLegends: showLegend,
         legendPosition: LegendPosition.right,
       ),
       chartValuesOptions: ChartValuesOptions(
+        chartValueBackgroundColor: Colors.transparent,
         showChartValues: showChartValues,
         showChartValuesInPercentage: true,
         decimalPlaces: 0,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:pie_chart/pie_chart.dart';
 import '../../config/App_margin.dart';
 import '../../config/app_spacing.dart';
 import '../../config/font_style.dart';
@@ -97,9 +98,11 @@ class EmployeesScreen extends StatelessWidget {
                         dataMap: statusCount,
                         colorList: colors,
                         centerText: '${allEmployees.length}\nTotal Employees',
-                        chartRadius: 120,
+                        chartRadius: 150,
                         showLegend: true,
                         showChartValues: false,
+                        centerTextStyle: FontStyles.subHeadingStyle(),
+                        chartType: ChartType.ring, // This might help with center styling
                       ),
                     ),
                   ],

@@ -1,15 +1,20 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:hr_management/config/app_spacing.dart';
 import 'package:image_picker/image_picker.dart';
+
+import '../../config/font_style.dart';
 
 class CompanyLogoPicker extends StatefulWidget {
   final void Function(File?) onImageSelected;
   final String? initialImage; // This is a URL or local path string
+  final String title;
 
   const CompanyLogoPicker({
     Key? key,
     required this.onImageSelected,
     this.initialImage,
+    this.title = "Company Logo",
   }) : super(key: key);
 
   @override
@@ -73,10 +78,10 @@ class _CompanyLogoPickerState extends State<CompanyLogoPicker> {
             ),
           ],
         ),
-        const SizedBox(height: 8),
-        const Text(
-          "Company Logo",
-          style: TextStyle(fontSize: 16),
+        AppSpacing.small(context),
+        Text(
+          widget.title, // Use dynamic title
+          style: FontStyles.subHeadingStyle(),
         ),
       ],
     );

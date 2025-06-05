@@ -55,13 +55,17 @@ class PlanCard extends StatelessWidget {
               )),
                Divider( color:Colors.grey.shade300),
               PrimaryButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => CompanyDetailsScreen(),
-                    ),
-                  );
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => CompanyDetailsScreen(
+                          isEditMode: false,
+                        ),
+                      ),
+                    );
+                    // Navigate or handle selection
+
                   // Navigate or handle selection
                 },
                 text: (isMonthly ? 'Subscribe Monthly' : 'Subscribe Yearly'),

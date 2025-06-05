@@ -1,6 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_management/core/widgets/custom_dropdown.dart';
 import 'package:hr_management/features/Add_depart_and_employee/controller/workpattern_controller.dart';
 import '../../config/App_margin.dart';
 import '../../config/app_spacing.dart';
@@ -59,11 +60,8 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
               AppSpacing.small(context),
               LeaveContainer(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: DropdownButton<WorkPattern>(
+                child: CustomDropdown<WorkPattern>(
                   value: workPatternController.selectedPattern.value,
-                  hint: const Text('Select Work Pattern'),
-                  isExpanded: true,
-                  underline: const SizedBox(),
                   items: workPatternController.workPatterns.map((pattern) {
                     return DropdownMenuItem<WorkPattern>(
                       value: pattern,
