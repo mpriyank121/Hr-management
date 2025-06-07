@@ -61,6 +61,7 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
               LeaveContainer(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 child: CustomDropdown<WorkPattern>(
+
                   value: workPatternController.selectedPattern.value,
                   items: workPatternController.workPatterns.map((pattern) {
                     return DropdownMenuItem<WorkPattern>(

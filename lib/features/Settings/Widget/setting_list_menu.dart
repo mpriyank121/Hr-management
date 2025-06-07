@@ -4,6 +4,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../config/font_style.dart';
 import '../../Company_details/Company_details_screen.dart';
 import '../../Holiday_List_Page/holiday_list_screen.dart';
+import 'leave_page.dart';
+import 'leave_request_form.dart';
 
 class MenuListWidget extends StatelessWidget {
   const MenuListWidget({super.key});
@@ -29,9 +31,14 @@ class MenuListWidget extends StatelessWidget {
             () => Get.to(() => HolidayPage(title: '')),
       ),
       _MenuItem(
+        'Add Leaves',
+        'assets/images/holiday_list_icon.png',
+            () => Get.to(() => LeaveConfigScreen()),
+      ),
+      _MenuItem(
         'Leave Request',
         'assets/images/User_Remove.png',
-            () => Get.to(() => const CompanyDetailsScreen()),
+            () => Get.to(() =>  RequestLeavePage()),
       ),
     ];
 

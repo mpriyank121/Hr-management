@@ -78,25 +78,20 @@ class _HolidayBottomSheetState extends State<HolidayBottomSheet> {
               Builder(
                 builder: (context) {
                   return LeaveContainer(
-                    child: DropdownButtonHideUnderline(
-                      child: DropdownButton<int>(
-                        value: selectedYear,
-                        items: getYearsList()
-                            .map((year) => DropdownMenuItem(value: year, child: Text(year.toString())))
-                            .toList(),
-                        onChanged: (year) => setState(() => selectedYear = year ?? selectedYear),
-                        isExpanded: true,
-                        dropdownColor: Colors.white,
-                        elevation: 8,
-                        selectedItemBuilder: (context) {
-                          return getYearsList().map((year) {
-                            return Container(
-                              alignment: Alignment.centerLeft,
-                              child: Text(year.toString()),
-                            );
-                          }).toList();
-                        },
+                    child: CustomDropdown<int>(
+                      value: selectedYear,
+                      decoration: const InputDecoration(
+                        hintText: "Select Year",
+                        border: InputBorder.none,
                       ),
+                      items: getYearsList()
+                          .map((year) => DropdownMenuItem<int>(
+                          value: year,
+                          child: Text(year.toString())
+                      ))
+                          .toList(),
+                      onChanged: (year) => setState(() => selectedYear = year ?? selectedYear),
+                      menuMaxHeight: 200,
                     ),
                   );
                 },
