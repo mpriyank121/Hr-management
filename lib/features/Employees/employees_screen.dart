@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
+import 'package:hr_management/core/widgets/custom_expansion_tile.dart';
 import 'package:pie_chart/pie_chart.dart';
 import '../../config/App_margin.dart';
 import '../../config/app_spacing.dart';
 import '../../config/font_style.dart';
 import '../../core/widgets/App_bar.dart';
+import '../../core/widgets/Empty_state_widget.dart';
 import '../../core/widgets/Pie_chart.dart';
 import '../../core/widgets/floating_action_button.dart';
+import '../Add_depart_and_employee/controller/department_controller.dart';
+import '../Add_depart_and_employee/controller/department_type_controller.dart';
 import '../Add_depart_and_employee/department_form.dart';
 import '../Add_depart_and_employee/new_employee_form.dart';
 import '../Management/Widgets/bordered_container.dart';
@@ -17,11 +21,23 @@ import 'Widgets/department_employee_list.dart';
 import 'controllers/employee_controller.dart';
 import 'employee_detail.dart';
 import 'models/employee_model.dart';
+class EmployeesScreen extends StatefulWidget {
+  const EmployeesScreen({Key? key}) : super(key: key);
 
-class EmployeesScreen extends StatelessWidget {
-  EmployeesScreen({Key? key}) : super(key: key);
+  @override
+  State<EmployeesScreen> createState() => _EmployeesScreenState();
+}
 
+class _EmployeesScreenState extends State<EmployeesScreen> {
   final EmployeeController controller = Get.put(EmployeeController());
+  final DepartmentTypeController departmentController = Get.put(DepartmentTypeController());
+
+  @override
+  void initState() {
+    super.initState();
+    controller.fetchEmployees();
+    departmentController.fetchDepartments();
+  }
 
   String _statusToString(EmploymentStatus status) {
     switch (status) {
@@ -37,7 +53,6 @@ class EmployeesScreen extends StatelessWidget {
         return 'Unknown';
     }
   }
-
 
   void _handleMenuSelection(String value) {
     if (value == 'department') {
@@ -61,7 +76,7 @@ class EmployeesScreen extends StatelessWidget {
         leading: IconButton(
           icon: SvgPicture.asset('assets/images/bc 3.svg'),
           onPressed: () {
-            // Implement back or drawer logic if needed
+            // back or drawer logic
           },
         ),
         title: 'Employees',
@@ -69,8 +84,14 @@ class EmployeesScreen extends StatelessWidget {
       ),
       body: AppMargin(
         child: Obx(() {
-          // Using Obx to reactively update UI on data changes
           final allEmployees = controller.employeeList;
+          if (allEmployees.isEmpty) {
+            return EmptyStateWidget(
+              imagePath: 'assets/images/empty_employee.png',
+              title: 'Empty',
+              subtitle: "You haven't added departments and,\n employees yet.",
+            );
+          }
 
           Map<String, double> statusCount = {};
           for (var status in EmploymentStatus.values) {
@@ -86,7 +107,7 @@ class EmployeesScreen extends StatelessWidget {
               _buildStatusSection(context),
               AppSpacing.small(context),
               BorderedContainer(
-                child: ExpansionTile(
+                child: CustomExpansionTile(
                   title: Text(
                     'Employee Status',
                     style: FontStyles.subHeadingStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -102,7 +123,7 @@ class EmployeesScreen extends StatelessWidget {
                         showLegend: true,
                         showChartValues: false,
                         centerTextStyle: FontStyles.subHeadingStyle(),
-                        chartType: ChartType.ring, // This might help with center styling
+                        chartType: ChartType.ring,
                       ),
                     ),
                   ],
@@ -112,7 +133,7 @@ class EmployeesScreen extends StatelessWidget {
               BorderedContainer(
                 child: DepartmentEmployeeList(
                   showEditButton: true,
-                  onTapRoute: () => EmployeeDetail(title: ''),
+
                 ),
               ),
               AppSpacing.small(context),
@@ -125,6 +146,7 @@ class EmployeesScreen extends StatelessWidget {
       ),
     );
   }
+
 
   Widget _buildStatusSection(BuildContext context) {
     final departmentMap = controller.departmentWiseEmployees;

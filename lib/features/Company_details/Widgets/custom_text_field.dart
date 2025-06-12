@@ -14,6 +14,7 @@ class CustomTextField extends StatelessWidget {
   final bool enabled;
   final String? Function(String?)? validator;
   final List<TextInputFormatter>? inputFormatters;
+  final InputDecoration? decoration;
 
   const CustomTextField({
     Key? key,
@@ -26,7 +27,8 @@ class CustomTextField extends StatelessWidget {
     this.initialValue,
     this.enabled = true,
     this.validator,
-    this.inputFormatters
+    this.inputFormatters,
+    this.decoration,
   }) : super(key: key);
 
   @override
@@ -40,8 +42,7 @@ class CustomTextField extends StatelessWidget {
         onChanged: onChanged,
         enabled: enabled,
         style: FontStyles.subHeadingStyle(),
-
-        decoration: InputDecoration(
+        decoration: decoration ?? InputDecoration(
           prefixIcon: icon != null ? Icon(icon, size: 16) : null,
           hintText: hint,
           hintStyle: FontStyles.subTextStyle(),

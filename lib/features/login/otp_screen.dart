@@ -67,17 +67,26 @@ class OtpPage extends StatelessWidget {
               const Spacer(),
 
               /// ✅ Continue Button
-              PrimaryButton(
-                text: 'Continue',
-                onPressed: () async {
-                  await _authController.verifyUserOtp();
+          Obx(() => PrimaryButton(
+            text: _authController.isLoading.value ? 'Verifying...' : 'Continue',
+            icon: _authController.isLoading.value
+                ? SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+            )
+                : null,
+            onPressed: _authController.isLoading.value
+                ? null
+                : () async {
+              await _authController.verifyUserOtp();
 
-                  if (_authController.isPhoneVerified.isTrue) {
-                    Get.offAll(() => MainScreen());
-                  }
-                },
-              ),
-            ],
+              if (_authController.isPhoneVerified.isTrue) {
+                Get.offAll(() => MainScreen());
+              }
+            },
+          ))
+          ],
           ),
         ),
       ),

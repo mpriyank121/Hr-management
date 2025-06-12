@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_management/core/services/auth_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hr_management/core/widgets/custom_toast.dart';
 
 import '../../../core/shared_pref_helper_class.dart';
 
 class AuthController extends GetxController {
   final phoneController = TextEditingController();
   final otpController = TextEditingController();
+  var isLoading = false.obs;
 
   final isOtpSent = false.obs;
   final isPhoneVerified = false.obs;
@@ -16,26 +19,45 @@ class AuthController extends GetxController {
     final phone = phoneController.text.trim();
 
     if (phone.isEmpty) {
-      Get.snackbar("Error", "Please enter phone number",
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Please enter phone number",
+        isError: true,
+      );
       return;
     }
 
     try {
+      isLoading.value = true;
       final response = await LoginAuthService.sendOtp(phone);
       if (response['status'] == true) {
         isOtpSent.value = true;
         isPhoneVerified.value = false;
 
-        Get.snackbar("Success", response['message'] ?? "OTP sent",
-            backgroundColor: Colors.green, colorText: Colors.white);
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Success",
+          message: response['message'] ?? "OTP sent",
+          isError: false,
+        );
       } else {
-        Get.snackbar("Error", response['message'] ?? "Failed to send OTP",
-            backgroundColor: Colors.red, colorText: Colors.white);
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Error",
+          message: response['message'] ?? "Failed to send OTP",
+          isError: true,
+        );
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString(),
-          backgroundColor: Colors.red, colorText: Colors.white);
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: e.toString(),
+        isError: true,
+      );
+    } finally {
+      isLoading.value = false;
     }
   }
 
@@ -45,33 +67,27 @@ class AuthController extends GetxController {
     final otp = otpController.text.trim();
 
     if (otp.isEmpty) {
-      Get.snackbar("Error", "Enter OTP",
-          backgroundColor: Colors.red, colorText: Colors.white);
       return;
     }
 
     try {
+      isLoading.value = true;
       final response = await LoginAuthService.verifyOtp(phone, otp);
       if (response['success'] == true) {
         isPhoneVerified.value = true;
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('isLoggedIn', true);
         await SharedPrefHelper.savePhone(phone);
 
-        Get.snackbar("Verified", response['message'] ?? "OTP Verified",
-            backgroundColor: Colors.green, colorText: Colors.white);
+        Get.offAllNamed('/home');
       } else {
-        Get.snackbar("Failed", response['message'] ?? "Invalid OTP",
-            backgroundColor: Colors.red, colorText: Colors.white);
+        // Handle failure silently or as needed
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString(),
-          backgroundColor: Colors.red, colorText: Colors.white);
+      // Handle error silently or as needed
+    } finally {
+      isLoading.value = false;
     }
-  }
-
-  @override
-  void onClose() {
-    phoneController.dispose();
-    otpController.dispose();
-    super.onClose();
   }
 }

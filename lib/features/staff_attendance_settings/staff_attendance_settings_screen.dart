@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hr_management/features/Company_details/Company_details_screen.dart';
 import '../../config/app_spacing.dart';
 import '../../core/widgets/App_bar.dart';
 import '../../core/widgets/primary_button.dart';
@@ -31,7 +32,7 @@ class StaffAttendanceSettingsScreen extends StatelessWidget {
                 Navigator.push(
                   context,
                    MaterialPageRoute(
-                    builder: (context) =>ManagementScreen(),
+                    builder: (context) =>CompanyDetailsScreen(),
                   ),
                 );
               },

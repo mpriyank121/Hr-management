@@ -24,6 +24,7 @@ class EmployeeService {
       final Map<String, dynamic> data = jsonDecode(resString);
 
       if (data['status'] == true && data['data'] is List) {
+        print("qwertr: ${data}");
         return (data['data'] as List)
             .map<Employee>((e) => Employee.fromJson(e))
             .toList();
@@ -56,7 +57,9 @@ class EmployeeService {
       final resString = await response.stream.bytesToString();
       final data = jsonDecode(resString);
 
+
       return data['status'] == true;
+
     } catch (e) {
       throw Exception('Error fetching employee data: $e');
     }

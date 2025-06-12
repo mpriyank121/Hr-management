@@ -4,20 +4,32 @@ import 'package:hr_management/config/app_spacing.dart';
 import 'package:hr_management/core/encryption/encryption_helper.dart';
 import 'package:hr_management/core/widgets/Leave_Container.dart';
 import 'package:hr_management/core/widgets/primary_button.dart';
+import '../../../core/shared_pref_helper_class.dart';
 import '../../../core/widgets/custom_dropdown.dart';
 import '../../Company_details/Widgets/custom_text_field.dart';
 import '../models/apply_leave_model.dart';
 import '../models/fetch_org_leave.dart';
 import '../models/leave_type_model.dart';
+import '../services/leave_delete_service.dart';
 import '../services/leave_fetch_service.dart';
 import 'package:intl/intl.dart';
+import 'package:hr_management/core/widgets/custom_toast.dart';
+
+import 'fetch_org_leaves_controller.dart';
 
 class LeaveController extends GetxController {
   final LeaveService _leaveService = LeaveService();
+  final LeaveTypeController leaveController = Get.put(LeaveTypeController());
 
   var availableLeaveTypes = <LeaveTypeModel>[].obs;
   var selectedLeaves = <Map<String, dynamic>>[].obs;
   var isLoading = false.obs;
+  RxBool isDeleting = false.obs;
+  RxString deleteMessage = ''.obs;
+  var selectedYear = DateTime
+      .now()
+      .year
+      .obs;
 
   /// API response
   var responseMessage = ''.obs;
@@ -44,16 +56,42 @@ class LeaveController extends GetxController {
       isLoading.value = true;
       availableLeaveTypes.value = await _leaveService.fetchLeaveTypes();
     } catch (e) {
-      Get.snackbar("Error", "Failed to load leave types");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Failed to load leave types",
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
   }
 
   // Add a new row to select leave and count
-  void addLeaveRowModal(BuildContext context) {
-    final TextEditingController daysController = TextEditingController();
+  void addLeaveRowModal(BuildContext context, {OrgLeave? leave}) {
+
+    int selectedYear = DateTime.now().year;
+    List<int> getYearsList() {
+      final currentYear = DateTime.now().year;
+      return List.generate(10, (index) => currentYear - 5 + index);
+    }
+    final TextEditingController daysController = TextEditingController(
+      text: leave?.totalAnnualLeaves ?? '',
+    );
+
+
     LeaveTypeModel? selectedType;
+
+    // If editing, find and preselect the matching LeaveTypeModel
+    if (leave != null) {
+      try {
+        selectedType = availableLeaveTypes.firstWhere(
+              (type) => type.leaveName == leave.leaveName,
+        );
+      } catch (e) {
+        selectedType = null;
+      }
+    }
 
     Get.bottomSheet(
       SingleChildScrollView(
@@ -68,17 +106,17 @@ class LeaveController extends GetxController {
             builder: (context, setState) {
               return Column(
                 mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  const Text(
-                    "Add Leave Type",
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  Text(
+                    leave != null ? "Edit Leave Type" : "Add Leave Type",
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   const SizedBox(height: 16),
                   LeaveContainer(
                     child: CustomDropdown<LeaveTypeModel>(
                       value: selectedType,
-                      isExpanded: true, // Add this line
+
                       decoration: const InputDecoration(
                         hintText: "Select Leave",
                         border: InputBorder.none,
@@ -103,35 +141,69 @@ class LeaveController extends GetxController {
                     hint: 'Enter number of days',
                   ),
                   AppSpacing.small(context),
+
+                  Builder(
+                    builder: (context) {
+                      return LeaveContainer(
+                        child: CustomDropdown<int>(
+                          value: selectedYear,
+                          decoration: const InputDecoration(
+                            hintText: "Select Year",
+                            border: InputBorder.none,
+                          ),
+                          items: getYearsList()
+                              .map((year) => DropdownMenuItem<int>(
+                              value: year,
+                              child: Text(year.toString())
+                          ))
+                              .toList(),
+                          onChanged: (year) => setState(() => selectedYear = year ?? selectedYear),
+
+                        ),
+                      );
+                    },
+                  ),
+
+                  AppSpacing.small(context),
                   PrimaryButton(
                     onPressed: () async {
-                      if (selectedType != null &&
-                          daysController.text.isNotEmpty) {
+                      if (selectedType != null && daysController.text.isNotEmpty) {
+                        final yearController = TextEditingController(
+                          text: selectedYear.toString(),
+                        );
                         selectedLeaves.add({
                           'type': selectedType,
-                          'daysController': TextEditingController(
-                            text: daysController.text,
-                          ),
+                          'daysController': TextEditingController(text: daysController.text),
+                          'yearController': yearController,
                         });
+                        Get.back(); // ✅ Close modal immediately
 
-                        print(
-                          'Leave added: ${selectedType?.leaveName}, Days: ${daysController.text}',
-                        );
+                        try {
+                          await submitLeaves();
+                          await leaveController.loadLeaveTypes(year: DateTime.now().year);
 
-                        selectedLeaves.refresh();
-                        Get.back(); // Close bottom sheet
-
-                        /// ✅ Call submitLeaves right after adding
-                        await submitLeaves();
+                        } catch (e) {
+                          CustomToast.showMessage(
+                            context: Get.context!,
+                            title: "Error",
+                            message: "Failed to ${leave != null ? 'update' : 'add'} leave",
+                            isError: true,
+                          );
+                          print("Leave error: $e");
+                        }
                       } else {
-                        Get.snackbar(
-                          "Error",
-                          "Please select leave type and enter days",
+                        CustomToast.showMessage(
+                          context: Get.context!,
+                          title: "Error",
+                          message: "Please select leave type and enter days",
+                          isError: true,
                         );
                       }
                     },
-                    text: 'Add',
+                    text: leave != null ? 'Update' : 'Add',
                   ),
+
+
                 ],
               );
             },
@@ -146,51 +218,63 @@ class LeaveController extends GetxController {
     );
   }
 
-  // Remove a row
-  void removeLeaveRow(int index) {
-    selectedLeaves.removeAt(index);
-  }
 
   // Submit leave types with count
   Future<void> submitLeaves() async {
-    final leaveTypes = <LeaveTypeModel>[];
-    final leaveCounts = <String>[];
-
-    for (var leave in selectedLeaves) {
-      final type = leave['type'];
-      final count = leave['daysController'].text.trim();
-
-      if (type != null && count.isNotEmpty) {
-        leaveTypes.add(type);
-        leaveCounts.add(count);
-      }
-    }
-
-    if (leaveTypes.isEmpty) {
-      Get.snackbar(
-        "Validation Error",
-        "Please select at least one leave type with count.",
+    if (selectedLeaves.isEmpty) {
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Validation Error",
+        message: "Please select at least one leave type with count.",
+        isError: true,
       );
       return;
     }
 
-    try {
-      isLoading.value = true;
-      final res = await _leaveService.submitLeaves(
-        mob: '',
-        type: '', // already hardcoded in service
-        leaveTypes: leaveTypes,
-        leaveCounts: leaveCounts,
-      );
+    isLoading.value = true;
 
-      responseMessage.value = res;
-      Get.snackbar("Success", "Leaves submitted successfully.");
+    try {
+      for (var leave in selectedLeaves) {
+        final type = leave['type'] as LeaveTypeModel?;
+        final count = leave['daysController'].text.trim();
+        final year = leave['yearController'].text.trim(); // ✅ Get year properly
+
+        if (type == null || count.isEmpty || year.isEmpty) {
+          // Skip invalid entries
+          continue;
+        }
+
+        final res = await _leaveService.submitLeaves(
+          mob: '', // still hardcoded
+          type: '',
+          leaveType: type,
+          leaveCount: count,
+          year: year, // ✅ Correct value
+        );
+
+        responseMessage.value = res;
+        print('Leave submitted for type: ${type.id}, year: $year, count: $count');
+      }
+
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Success",
+        message: "Leaves submitted successfully.",
+        isError: false,
+      );
     } catch (e) {
-      Get.snackbar("Error", "Failed to submit leave configuration.");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Failed to submit leave configuration.",
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
   }
+
+
 
   // Add these variables to your LeaveController class
   var applyLeaveLoading = false.obs;
@@ -202,8 +286,11 @@ class LeaveController extends GetxController {
     required String startDate,
     required String endDate,
     required String note,
-    String? empMob,
+
   }) async {
+
+    final storedPhone = await SharedPrefHelper.getPhone();
+    print('📞 Phone from SharedPreferences: $storedPhone');
     try {
       applyLeaveLoading.value = true;
       applyLeaveMessage.value = '';
@@ -211,7 +298,7 @@ class LeaveController extends GetxController {
       final request = ApplyLeaveRequest(
         type: '95a110a110a106a119a74a99a95a116a99a100', // your constant type
         empMob: EncryptionHelper.encryptString(
-          empMob ?? '',
+          storedPhone ?? '',
         ), // or get from session if needed
         leaveType: leaveTypeId,
         startDate: startDate,
@@ -220,41 +307,38 @@ class LeaveController extends GetxController {
       );
 
       final response = await LeaveService.applyLeave(request);
+      debugPrint("ghj ${response}");
 
       if (response != null) {
         applyLeaveMessage.value = response['message'] ?? '';
 
         if (response['status'] == true) {
-          Get.snackbar(
-            "Success",
-            "Leave application submitted successfully",
-            backgroundColor: Colors.green,
-            colorText: Colors.white,
-          );
+          Get.back();
+
         } else {
-          Get.snackbar(
-            "Error",
-            response['message'] ?? 'Failed to apply leave',
-            backgroundColor: Colors.red,
-            colorText: Colors.white,
+          CustomToast.showMessage(
+            context: Get.context!,
+            title: "Error",
+            message: response['message'] ?? 'Failed to apply leave',
+            isError: true,
           );
         }
       } else {
         applyLeaveMessage.value = 'Failed to submit leave application';
-        Get.snackbar(
-          "Error",
-          "Failed to submit leave application",
-          backgroundColor: Colors.red,
-          colorText: Colors.white,
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Error",
+          message: "Failed to submit leave application",
+          isError: true,
         );
       }
     } catch (e) {
       applyLeaveMessage.value = 'Error: ${e.toString()}';
-      Get.snackbar(
-        "Error",
-        "An error occurred while applying for leave",
-        backgroundColor: Colors.red,
-        colorText: Colors.white,
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "An error occurred while applying for leave",
+        isError: true,
       );
     } finally {
       applyLeaveLoading.value = false;
@@ -275,22 +359,42 @@ class LeaveController extends GetxController {
     required String note,
   }) async {
     if (selectedLeave == null) {
-      Get.snackbar("Validation Error", "Please select a leave type");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Validation Error",
+        message: "Please select a leave type",
+        isError: true,
+      );
       return;
     }
 
     if (fromDate == null) {
-      Get.snackbar("Validation Error", "Please select start date");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Validation Error",
+        message: "Please select start date",
+        isError: true,
+      );
       return;
     }
 
     if (toDate == null) {
-      Get.snackbar("Validation Error", "Please select end date");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Validation Error",
+        message: "Please select end date",
+        isError: true,
+      );
       return;
     }
 
     if (note.trim().isEmpty) {
-      Get.snackbar("Validation Error", "Please enter a reason for leave");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Validation Error",
+        message: "Please enter a reason for leave",
+        isError: true,
+      );
       return;
     }
 
@@ -301,72 +405,39 @@ class LeaveController extends GetxController {
       note: note.trim(),
     );
   }
+  Future<void> deleteLeave({
+    required String type,
+    required String id,
+  }) async {
+    isDeleting.value = true;
 
-  void editLeaveRow(int index, BuildContext context) {
-    final existingLeave = selectedLeaves[index];
-    final TextEditingController controllerCopy = TextEditingController(
-      text: existingLeave['daysController']?.text ?? '',
-    );
-    LeaveTypeModel? selectedType = existingLeave['type'];
+    final result = await LeaveDeleteService.deleteLeave(type: type, id: id);
+    if (result != null && result['status'] == true) {
+      deleteMessage.value = result['message'] ?? 'Deleted successfully';
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Success",
+        message: deleteMessage.value,
+        isError: false,
+      );
+      //await leaveController.loadLeaveTypes(year: );
+      Get.back(); // Close the loader dialog
+    } else {
+      deleteMessage.value = result?['message'] ?? 'Delete failed';
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: deleteMessage.value,
+        isError: true,
+      );
+    }
 
-    Get.bottomSheet(
-      Container(
-        padding: const EdgeInsets.all(16),
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-        ),
-        child: Wrap(
-          runSpacing: 16,
-          children: [
-            const Text(
-              "Edit Leave Type",
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            CustomDropdown<LeaveTypeModel>(
-              value: selectedType,
-              decoration: const InputDecoration(
-                hintText: "Select Leave",
-                border: OutlineInputBorder(),
-              ),
-              items: availableLeaveTypes.map((type) {
-                return DropdownMenuItem(
-                  value: type,
-                  child: Text(type.leaveName),
-                );
-              }).toList(),
-              onChanged: (value) => selectedType = value,
-            ),
-            TextField(
-              controller: controllerCopy,
-              keyboardType: TextInputType.number,
-              decoration: const InputDecoration(
-                labelText: "Number of Days",
-                border: OutlineInputBorder(),
-              ),
-            ),
-            Align(
-              alignment: Alignment.centerRight,
-              child: ElevatedButton(
-                onPressed: () {
-                  if (selectedType != null && controllerCopy.text.isNotEmpty) {
-                    selectedLeaves[index] = {
-                      'type': selectedType,
-                      'daysController': controllerCopy,
-                    };
-                    selectedLeaves.refresh();
-                    Get.back();
-                  } else {
-                    Get.snackbar("Error", "Please complete all fields");
-                  }
-                },
-                child: const Text("Save"),
-              ),
-            ),
-          ],
-        ),
-      ),
-      isScrollControlled: true,
-    );
+    isDeleting.value = false;
   }
+
+  void changeYear(int year) {
+    selectedYear.value = year;
+    fetchLeaveTypes();
+  }
+
 }

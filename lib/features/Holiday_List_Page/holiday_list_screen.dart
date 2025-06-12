@@ -33,7 +33,7 @@ class _HolidayPageState extends State<HolidayPage> {
             holidayDate: date.toIso8601String().split("T").first,
             year: year.toString(),
           );
-          Get.back(); // Close the sheet
+
         },
       ),
     );
@@ -43,7 +43,7 @@ class _HolidayPageState extends State<HolidayPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: CustomAppBar(title: widget.title),
+        appBar: CustomAppBar(title: "Holiday List"),
         body: Column(
           children: [
             Expanded(child: HolidayList()),

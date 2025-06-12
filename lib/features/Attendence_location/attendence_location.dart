@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../config/font_style.dart';
 import '../../core/widgets/primary_button.dart';
+import '../staff_attendance_settings/staff_attendance_settings_screen.dart';
 import 'Widgets/location_input_field.dart';
 import 'Widgets/location_map_view.dart';
 import 'Widgets/radius_slider.dart';
@@ -19,7 +20,7 @@ class AttendanceLocationSetupScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const LocationMapView(),
+            // const LocationMapView(),
             const SizedBox(height: 16),
             Text(
               "Tell us your company address!\n& set geofence radius",
@@ -33,7 +34,12 @@ class AttendanceLocationSetupScreen extends StatelessWidget {
             PrimaryButton(
               text: "Continue",
               onPressed: () {
-                // TODO: Implement continue action
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => StaffAttendanceSettingsScreen()
+                  ),
+                );
               },
             ),
           ],

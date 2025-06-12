@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:hr_management/core/encryption/encryption_helper.dart';
 import 'package:hr_management/core/widgets/Leave_Container.dart';
@@ -17,9 +18,15 @@ import '../Company_details/Widgets/upload_card.dart';
 import '../Company_details/controller/company_details_controller.dart';
 import '../Company_details/controller/industry_controller.dart';
 import '../Company_details/controller/organization_controller.dart';
+import '../Add_depart_and_employee/widgets/form_section.dart';
+import '../Add_depart_and_employee/widgets/required_text_field.dart';
+import '../Add_depart_and_employee/widgets/required_dropdown.dart';
+import '../Add_depart_and_employee/utils/validation_utils.dart';
+import 'models/industry_model.dart';
+import 'package:hr_management/core/widgets/custom_toast.dart';
 
 class CompanyDetailsScreen extends StatefulWidget {
-  final String? phone; // null for registration, provided for editing
+  final String? phone;
   final bool isEditMode;
 
   const CompanyDetailsScreen({
@@ -42,6 +49,9 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
   String? selectedStateId;
   String? selectedCityId;
 
+  final _formKey = GlobalKey<FormState>();
+  final RxBool showRequired = false.obs;
+
   // Local controllers for edit mode
   TextEditingController? orgNameController;
   TextEditingController? addressController;
@@ -58,7 +68,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
   void initState() {
     super.initState();
     industryController.fetchIndustries();
-
 
     if (widget.isEditMode) {
       _initializeEditMode();
@@ -99,7 +108,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
             selectedCityId = org.cityId;
           });
 
-          // Save original values for comparison
           _originalOrgData = {
             'orgName': org.orgName ?? '',
             'industryType': org.industryType ?? '',
@@ -122,7 +130,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
   @override
   void dispose() {
-    // Dispose edit mode controllers
     if (widget.isEditMode) {
       orgNameController?.dispose();
       addressController?.dispose();
@@ -138,7 +145,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
     super.dispose();
   }
 
-  // Get the appropriate controller based on mode
   TextEditingController _getController(String field) {
     if (widget.isEditMode) {
       switch (field) {
@@ -155,7 +161,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
         default: return TextEditingController();
       }
     } else {
-      // Use detailsController for registration mode
       switch (field) {
         case 'orgName': return detailsController.orgNameController;
         case 'address': return detailsController.addressController;
@@ -173,6 +178,42 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
   }
 
   Future<void> _onSavePressed() async {
+    showRequired.value = true;
+
+    // Check if any required field is empty
+    if (_getController('orgName').text.isEmpty ||
+        _getController('address').text.isEmpty ||
+        _getController('pincode').text.isEmpty ||
+        _getController('email').text.isEmpty ||
+        _getController('phone').text.isEmpty ||
+        _getController('panNumber').text.isEmpty ||
+        selectedIndustryId == null) {
+
+      CustomToast.showMessage(
+        context: context,
+        title: "Error",
+        message: "Please fill all required fields",
+        isError: true,
+      );
+      return;
+    }
+
+    // Validate form fields
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    // For registration mode, check phone verification
+    if (!widget.isEditMode && !detailsController.isPhoneVerified.value) {
+      CustomToast.showMessage(
+        context: context,
+        title: "Verification Required",
+        message: "Please verify your phone number",
+        isError: true,
+      );
+      return;
+    }
+
     if (widget.isEditMode) {
       await _handleEditSave();
     } else {
@@ -191,8 +232,8 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
       'email': _getController('email').text.trim(),
       'phone': _getController('phone').text.trim(),
       'website': _getController('website').text.trim(),
-      'gst_no': _getController('gstNo').text.trim(),
-      'pan_number': _getController('panNumber').text.trim(),
+      'gst_no': _getController('gstNo').text.trim().toUpperCase(),
+      'pan_number': _getController('panNumber').text.trim().toUpperCase(),
       'pan_image': detailsController.panImageUrl,
       'org_logo': detailsController.orgLogoUrl,
     };
@@ -213,6 +254,13 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
       orgLogo: isProfileChanged ? detailsController.orgLogo : null,
       panImage: isPanCardChanged ? detailsController.panImage : null,
     );
+
+    CustomToast.showMessage(
+      context: context,
+      title: "Success",
+      message: "Company details updated successfully",
+      isError: false,
+    );
   }
 
   @override
@@ -223,219 +271,286 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
         leading: const BackButton(),
       ),
       body: Obx(() {
-        // Show loading for edit mode
         if (widget.isEditMode && orgController.isLoading.value) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Show loading for industries
         if (industryController.industries.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
 
-        // Show error for edit mode
         if (widget.isEditMode && orgController.organization.value == null && !orgController.isLoading.value) {
           return const Center(child: Text("Failed to load organization data"));
         }
 
         return AppMargin(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                AppSpacing.small(context),
-                CompanyLogoPicker(
-                  title: "Company Logo",
-                  initialImage: widget.isEditMode
-                      ? orgController.organization.value?.logoUrl
-                      : null,
-                  onImageSelected: (file) => detailsController.orgLogo = file,
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Company Name*"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "A to Z",
-                  controller: _getController('orgName'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Business Field*"),
-                AppSpacing.small(context),
-                LeaveContainer(
-                    child: CustomDropdown(
-                  items: industryController.industries.map((industry) {
-                    return DropdownMenuItem<String>(
-                      value: industry.id,
-                      child: Text(industry.industry),
-                    );
-                  }).toList(),
-                  value: selectedIndustryId,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedIndustryId = value;
-                      if (!widget.isEditMode) {
-                        detailsController.industryTypeController.text = value ?? '';
-                      }
-                    });
-                  },
-                )) ,
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Address*"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "A to Z",
-                  controller: _getController('address'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Pin Code*"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "6-digit PIN",
-                  keyboardType: TextInputType.number,
-                  controller: _getController('pincode'),
-                  onChanged: (pin) async {
-                    if (!widget.isEditMode) {
-                      detailsController.userManuallyChangedPincode.value = true;
-                    }
-
-                    if (pin.length == 6) {
-                      await detailsController.onPincodeChanged(pin);
-
-                      // Update state and city for both modes
-                      final fetchedState = detailsController.stateController.text;
-                      final fetchedCity = detailsController.cityController.text;
-
-                      if (fetchedState.isNotEmpty && fetchedCity.isNotEmpty) {
-                        setState(() {
-                          _getController('state').text = fetchedState;
-                          _getController('city').text = fetchedCity;
-                          selectedStateId = detailsController.stateId;
-                          selectedCityId = detailsController.cityId;
-                        });
-                      }
-                    }
-                  },
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "State"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "Enter State",
-                  controller: _getController('state'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "City"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "Enter City",
-                  controller: _getController('city'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Email*"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "example@gmail.com",
-                  controller: _getController('email'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Phone Number*"),
-                AppSpacing.small(context),
-
-                // Phone field with OTP for registration, disabled for edit
-                if (widget.isEditMode)
-                  CustomTextField(
-                    hint: "+91 | Phone",
-                    enabled: false,
-                    controller: _getController('phone'),
-                  )
-                else
-                  _buildPhoneWithOTP(),
-
-                // OTP boxes for registration mode only
-                if (!widget.isEditMode)
-                  Obx(() {
-                    if (!detailsController.isOtpSent.value) return SizedBox.shrink();
-                    return Column(
-                      children: [
-                        AppSpacing.small(context),
-                        OtpInputBoxes(
-                          enabled: !detailsController.isPhoneVerified.value,
-                          onOtpChanged: (otp) {
-                            detailsController.otpController.text = otp;
-                            if (otp.length == 4 && !detailsController.isPhoneVerified.value) {
-                              detailsController.verifyUserOtp();
-                            }
-                          },
-                        ),
-                      ],
-                    );
-                  }),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Website"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "www.example.com",
-                  controller: _getController('website'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "GST Number"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: "Optional",
-                  controller: _getController('gstNo'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "PAN Number*"),
-                AppSpacing.small(context),
-                CustomTextField(
-                  hint: widget.isEditMode ? "ABCDE1234F" : "A to Z",
-                  controller: _getController('panNumber'),
-                ),
-
-                AppSpacing.small(context),
-                const SectionTitle(title: "Upload PAN"),
-                AppSpacing.small(context),
-                UploadCard(
-                  title: "Upload your PAN card",
-                  initialImage: widget.isEditMode
-                      ? orgController.organization.value?.panImageUrl
-                      : null,
-                  onImageSelected: (file) => detailsController.panImage = file,
-                ),
-
-                AppSpacing.small(context),
-                PrimaryButton(
-                  text: widget.isEditMode ? "Save" : "Register Now",
-                  onPressed: _onSavePressed,
-                ),
-
-                // Terms text only for registration
-                if (!widget.isEditMode) ...[
-                  AppSpacing.small(context),
-                  const Text.rich(
-                    TextSpan(
-                      text: "By continuing, you agree to Bookchor's ",
-                      children: [
-                        TextSpan(
-                          text: "Terms of Use & Privacy",
-                          style: TextStyle(color: Colors.orange),
-                        )
-                      ],
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  FormSection(
+                    title: "",
+                    child: CompanyLogoPicker(
+                      title: "Company Logo",
+                      initialImage: widget.isEditMode
+                          ? orgController.organization.value?.logoUrl
+                          : null,
+                      onImageSelected: (file) => detailsController.orgLogo = file,
                     ),
-                    textAlign: TextAlign.center,
                   ),
+
+                  FormSection(
+                    title: "Company Name",
+                    child: Obx(() => RequiredTextField(
+                      hint: "Enter company name",
+                      controller: _getController('orgName'),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z\s]')),
+                      ],
+                      validator: ValidationUtils.validateName,
+                      showRequired: showRequired.value,
+                      fieldName: "company name",
+                    )),
+                  ),
+
+                  FormSection(
+                    title: "Business Field",
+                    child: Obx(() => RequiredDropdown<Industry>(
+                      value: industryController.industries.firstWhereOrNull((i) => i.id == selectedIndustryId),
+                      items: industryController.industries,
+                      onChanged: (val) {
+                        setState(() {
+                          selectedIndustryId = val?.id;
+                          if (!widget.isEditMode) {
+                            detailsController.industryTypeController.text = val?.id ?? '';
+                          }
+                        });
+                      },
+                      hint: "Select Business Field",
+                      itemBuilder: (Industry industry) => Text(industry.industry),
+                      showRequired: showRequired.value,
+                      fieldName: "business field",
+                    )),
+                  ),
+
+                  FormSection(
+                    title: "Address",
+                    child: Obx(() => RequiredTextField(
+                      hint: "Enter complete address",
+                      controller: _getController('address'),
+                      validator: ValidationUtils.validateName,
+                      showRequired: showRequired.value,
+                      fieldName: "address",
+                    )),
+                  ),
+
+                  FormSection(
+                    title: "PIN Code",
+                    child: Obx(() => RequiredTextField(
+                      hint: "Enter 6-digit PIN code",
+                      keyboardType: TextInputType.number,
+                      controller: _getController('pincode'),
+                      inputFormatters: [
+                        FilteringTextInputFormatter.digitsOnly,
+                        LengthLimitingTextInputFormatter(6),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'PIN code is required';
+                        }
+                        if (value.length != 6) {
+                          return 'Please enter a valid 6-digit PIN code';
+                        }
+                        return null;
+                      },
+                      showRequired: showRequired.value,
+                      fieldName: "PIN code",
+                      onChanged: (pin) async {
+                        // Set userManuallyChangedPincode to true for both edit and registration modes
+                        detailsController.userManuallyChangedPincode.value = true;
+
+                        if (pin.length == 6) {
+                          await detailsController.onPincodeChanged(pin);
+                          final fetchedState = detailsController.stateController.text;
+                          final fetchedCity = detailsController.cityController.text;
+
+                          if (fetchedState.isNotEmpty && fetchedCity.isNotEmpty) {
+                            setState(() {
+                              _getController('state').text = fetchedState;
+                              _getController('city').text = fetchedCity;
+                              selectedStateId = detailsController.stateId;
+                              selectedCityId = detailsController.cityId;
+                            });
+                          }
+                        }
+                      },
+                    )),
+                  ),
+
+                  FormSection(
+                    title: "State",
+                    child: CustomTextField(
+                      hint: "State will be auto-filled",
+                      controller: _getController('state'),
+                      enabled: false,
+                    ),
+                  ),
+
+                  FormSection(
+                    title: "City",
+                    child: CustomTextField(
+                      hint: "City will be auto-filled",
+                      controller: _getController('city'),
+                      enabled: false,
+                    ),
+                  ),
+
+                  FormSection(
+                    title: "Email",
+                    child: Obx(() => RequiredTextField(
+                      hint: "example@gmail.com",
+                      controller: _getController('email'),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Email is required';
+                        }
+                        final emailRegex = RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$');
+                        if (!emailRegex.hasMatch(value.trim())) {
+                          return 'Please enter a valid email address';
+                        }
+                        return null;
+                      },
+                      showRequired: showRequired.value,
+                      fieldName: "email",
+                    )),
+                  ),
+
+                  FormSection(
+                    title: "Phone Number",
+                    child: widget.isEditMode
+                        ? CustomTextField(
+                            hint: "+91 | Phone",
+                            enabled: false,
+                            controller: _getController('phone'),
+                          )
+                        : _buildPhoneWithOTP(),
+                  ),
+
+                  if (!widget.isEditMode)
+                    Obx(() {
+                      if (!detailsController.isOtpSent.value) return const SizedBox.shrink();
+                      return Column(
+                        children: [
+                          AppSpacing.small(context),
+                          OtpInputBoxes(
+                            enabled: !detailsController.isPhoneVerified.value,
+                            onOtpChanged: (otp) {
+                              detailsController.otpController.text = otp;
+                              if (otp.length == 4 && !detailsController.isPhoneVerified.value) {
+                                detailsController.verifyUserOtp();
+                              }
+                            },
+                          ),
+                        ],
+                      );
+                    }),
+
+                  FormSection(
+                    title: "Website",
+                    child: CustomTextField(
+                      hint: "www.example.com",
+                      controller: _getController('website'),
+                      keyboardType: TextInputType.url,
+                    ),
+                  ),
+
+                  FormSection(
+                    title: "GST Number",
+                    child: CustomTextField(
+                      hint: "Enter GST number (optional)",
+                      controller: _getController('gstNo'),
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(15),
+                        FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                        TextInputFormatter.withFunction((oldValue, newValue) {
+                          return newValue.copyWith(text: newValue.text.toUpperCase());
+                        }),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) return null;
+                        final gstRegex = RegExp(r'^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$');
+                        if (!gstRegex.hasMatch(value.trim().toUpperCase())) {
+                          return 'Please enter a valid GST number';
+                        }
+                        return null;
+                      },
+                    ),
+                  ),
+
+                  FormSection(
+                    title: "PAN Number",
+                    child: Obx(() => RequiredTextField(
+                      hint: "ABCDE1234F",
+                      controller: _getController('panNumber'),
+                      inputFormatters: [
+                        LengthLimitingTextInputFormatter(10),
+                        FilteringTextInputFormatter.allow(RegExp(r'[A-Z0-9]')),
+                        TextInputFormatter.withFunction((oldValue, newValue) {
+                          return newValue.copyWith(text: newValue.text.toUpperCase());
+                        }),
+                      ],
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'PAN number is required';
+                        }
+                        final panRegex = RegExp(r'^[A-Z]{5}[0-9]{4}[A-Z]{1}$');
+                        if (!panRegex.hasMatch(value.trim().toUpperCase())) {
+                          return 'Please enter a valid PAN number (e.g., ABCDE1234F)';
+                        }
+                        return null;
+                      },
+                      showRequired: showRequired.value,
+                      fieldName: "PAN number",
+                    )),
+                  ),
+
+                  FormSection(
+                    title: "Upload PAN",
+                    child: UploadCard(
+                      title: "Upload your PAN card",
+                      initialImage: widget.isEditMode
+                          ? orgController.organization.value?.panImageUrl
+                          : null,
+                      onImageSelected: (file) => detailsController.panImage = file,
+                    ),
+                  ),
+
+                  AppSpacing.small(context),
+                  PrimaryButton(
+                    text: widget.isEditMode ? "Save" : "Register Now",
+                    onPressed: _onSavePressed,
+                  ),
+
+                  if (!widget.isEditMode) ...[
+                    AppSpacing.small(context),
+                    const Text.rich(
+                      TextSpan(
+                        text: "By continuing, you agree to Bookchor's ",
+                        children: [
+                          TextSpan(
+                            text: "Terms of Use & Privacy",
+                            style: TextStyle(color: Colors.orange),
+                          )
+                        ],
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
           ),
         );
@@ -457,11 +572,18 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
       return Row(
         children: [
           Expanded(
-            child: CustomTextField(
+            child: RequiredTextField(
               hint: "+91 | 9876543210",
               keyboardType: TextInputType.phone,
               controller: _getController('phone'),
               enabled: !detailsController.isPhoneVerified.value,
+              inputFormatters: [
+                FilteringTextInputFormatter.digitsOnly,
+                LengthLimitingTextInputFormatter(10),
+              ],
+              validator: ValidationUtils.validatePhone,
+              showRequired: showRequired.value,
+              fieldName: "phone number",
             ),
           ),
           const SizedBox(width: 8),
@@ -471,6 +593,17 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
             text: buttonText,
             onPressed: () {
               if (detailsController.isPhoneVerified.value) return;
+
+              final phoneValue = _getController('phone').text.trim();
+              if (ValidationUtils.validatePhone(phoneValue) != null) {
+                CustomToast.showMessage(
+                  context: context,
+                  title: "Invalid Phone",
+                  message: "Please enter a valid 10-digit phone number",
+                  isError: true,
+                );
+                return;
+              }
               detailsController.sendOtpToUser();
             },
           ),

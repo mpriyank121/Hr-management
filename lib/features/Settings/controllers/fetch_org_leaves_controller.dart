@@ -3,34 +3,43 @@ import '../models/fetch_org_leave.dart';
 import '../services/leave_fetch_service.dart';
 
 class LeaveTypeController extends GetxController {
-  var isLoading = false.obs;
   var availableLeaveTypes = <OrgLeave>[].obs;
+  var isLoading = false.obs;
+  var isSubmitting = false.obs;
   var selectedLeave = Rxn<OrgLeave>();
-  var message = ''.obs;
+
+  // Match HolidayController pattern
+  var selectedYear = DateTime.now().year.obs;
 
   @override
   void onInit() {
     super.onInit();
-    loadLeaveTypes();
+    loadLeaveTypes(year: selectedYear.value); // initial load for current year
   }
 
-  Future<void> loadLeaveTypes() async {
+  /// Fetch leave types for a specific year
+  Future<void> loadLeaveTypes({required int year}) async {
     try {
       isLoading.value = true;
-
-      final result = await LeaveService.fetchorgleaves();
-
+      print('📦 Fetching leave types for year $year');
+      final result = await LeaveService.fetchorgleaves(year: year);
       if (result != null) {
         availableLeaveTypes.assignAll(result);
-        message.value = 'Leave types loaded successfully';
       } else {
-        message.value = 'Failed to load leave types';
+        availableLeaveTypes.clear();
       }
     } catch (e) {
-      message.value = 'An error occurred: $e';
+      print('❌ Error loading leave types: $e');
+      availableLeaveTypes.clear();
     } finally {
       isLoading.value = false;
     }
+  }
+
+  /// Triggered from UI when year changes
+  void changeYear(int year) {
+    selectedYear.value = year;
+    loadLeaveTypes(year: year);
   }
 
   void setSelectedLeave(OrgLeave? leave) {

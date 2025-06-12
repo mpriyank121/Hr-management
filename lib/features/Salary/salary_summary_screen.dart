@@ -97,7 +97,6 @@ class SalarySummaryScreen extends StatelessWidget {
               _buildStatusRow("Status", status),
               AppSpacing.small(context),
               GroupedEmployeeList(
-                groupedEmployees: groupedEmployees,
                 onTap: (employee) {
                   // handle tap
                 },

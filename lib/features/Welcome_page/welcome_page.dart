@@ -43,7 +43,7 @@ class WelcomePage extends StatelessWidget {
       body: Stack(
         children: [
           const CustomBackground(
-            imagePath: 'assets/images/background_image.png',
+            imagePath: 'assets/images/bg_image.png',
           ),
           SafeArea(
             child: Padding(
@@ -67,44 +67,29 @@ class WelcomePage extends StatelessWidget {
                   const SizedBox(height: 6),
 
                   Text(
-                    "HR Managements App",
+                    "HR Management App",
                     style: FontStyles.subTextStyle(fontSize: 12),
                   ),
 
-                  SizedBox(height: screenHeight * 0.18),
+                  SizedBox(height: screenHeight * 0.1),
 
                   // Info Card
                   Center(
                     child: FractionallySizedBox(
-                      widthFactor: 0.8,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
+                      widthFactor: 0.95,
+                      child: AspectRatio(
+                        aspectRatio: 7/ 7, // or adjust based on your image dimensions
+                        child: ClipRRect(
                           borderRadius: BorderRadius.circular(12),
-                          boxShadow: const [
-                            BoxShadow(
-                              color: Colors.black12,
-                              blurRadius: 10,
-                              offset: Offset(0, 5),
-                            ),
-                          ],
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            menuItem(Icons.calendar_today_outlined, "Attendance"),
-                            menuItem(Icons.payment_outlined, "Payment slip"),
-                            menuItem(Icons.manage_accounts_outlined, "Manage Leaves"),
-                            menuItem(Icons.location_on_outlined, "Live Tracking"),
-                          ],
+                          child: Image.asset(
+                            'assets/images/welcome_image.png',
+
+                          ),
                         ),
                       ),
                     ),
                   ),
-
                   const Spacer(),
-
                   // Bottom Buttons
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,

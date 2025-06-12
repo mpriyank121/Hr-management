@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hr_management/config/style.dart';
 
 import '../../config/app_cards.dart';
 
@@ -30,13 +31,9 @@ class CustomListTile extends StatefulWidget {
 
 class _CustomListTileState extends State<CustomListTile>
     with SingleTickerProviderStateMixin {
-  bool _isExpanded = false;
 
-  void _toggleExpand() {
-    setState(() {
-      _isExpanded = !_isExpanded;
-    });
-  }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +68,7 @@ class _CustomListTileState extends State<CustomListTile>
                     child: widget.title ??
                         Text(
                           widget.item['title'] ?? '',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: fontStyles.headingStyle,
                           overflow: TextOverflow.ellipsis,
                           maxLines: 2,
                         ),

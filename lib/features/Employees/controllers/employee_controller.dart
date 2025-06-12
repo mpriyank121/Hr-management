@@ -37,10 +37,6 @@ class EmployeeController extends GetxController {
   Employee? getEmployeeById(String id) {
     return employeeList.firstWhereOrNull((emp) => emp.id == id);
   }
-
-  /// Update employee
-
-
   /// Add new employee
   void addEmployee(Employee newEmployee) {
     employeeList.add(newEmployee);

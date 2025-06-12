@@ -12,14 +12,16 @@ class DepartmentTypeService {
       final storedPhone = await SharedPrefHelper.getPhone();
 
       if (storedPhone == null || storedPhone.isEmpty) {
+        print('[ERROR] Phone number not found in SharedPreferences.');
         throw Exception('Phone number not found in SharedPreferences.');
       }
 
       final encryptedType = EncryptionHelper.encryptString(department);
 
+      print('[DEBUG] Fetching departments...');
       print('[DEBUG] Raw Type: $department');
       print('[DEBUG] Encrypted Type: $encryptedType');
-      print('[DEBUG] Encrypted Type: $storedPhone');
+      print('[DEBUG] Phone: $storedPhone');
 
       final url = Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/home.php');
       final request = http.MultipartRequest('POST', url);
@@ -44,12 +46,24 @@ class DepartmentTypeService {
           final List data = decoded['data'];
           print('[DEBUG] Department Data: $data');
 
-          return data.map((e) => DepartmentModel.fromJson(e)).toList();
+          // Print each department's data for debugging
+          for (var dept in data) {
+            print('[DEBUG] Department Details:');
+            print('- ID: ${dept['id']}');
+            print('- Name: ${dept['department']}');
+            print('- Supervisor: ${dept['supervisor']}');
+            print('- Work Pattern: ${dept['work_pattern']}');
+          }
+
+          final departments = data.map((e) => DepartmentModel.fromJson(e)).toList();
+          print('[DEBUG] Parsed Departments: ${departments.map((d) => '${d.id}: ${d.department} (Supervisor: ${d.supervisor}, Work Pattern: ${d.workPattern})').join(', ')}');
+          return departments;
         } else {
-          print('[DEBUG] API Error Message: ${decoded['message']}');
+          print('[ERROR] API Error Message: ${decoded['message']}');
           throw Exception(decoded['message'] ?? 'Failed to fetch departments');
         }
       } else {
+        print('[ERROR] Network error: ${response.statusCode} - ${response.reasonPhrase}');
         throw Exception('Network error: ${response.statusCode} - ${response.reasonPhrase}');
       }
     } catch (e) {

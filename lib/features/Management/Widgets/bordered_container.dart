@@ -10,8 +10,8 @@ class BorderedContainer extends StatelessWidget {
   const BorderedContainer({
     Key? key,
     required this.child,
-    this.padding = const EdgeInsets.all(12),
-    this.margin = const EdgeInsets.symmetric(vertical: 8),
+    this.padding = const EdgeInsets.all(10),
+    this.margin = const EdgeInsets.symmetric(vertical: 0),
   }) : super(key: key);
 
   @override

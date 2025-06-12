@@ -33,8 +33,9 @@ class LeaveService {
   Future<String> submitLeaves({
     required String mob,
     required String type,
-    required List<LeaveTypeModel> leaveTypes,
-    required List<String> leaveCounts,
+    required LeaveTypeModel leaveType, // single leave type now
+    required String leaveCount,        // single leave count
+    required String year,              // single year
   }) async {
     final storedPhone = await SharedPrefHelper.getPhone();
     print('📞 Phone from SharedPreferences: $storedPhone');
@@ -42,17 +43,17 @@ class LeaveService {
     final Uri url = Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/leave.php');
     var request = MultipartRequest('POST', url);
 
+    // Required fields
     request.fields['type'] = "91a94a94a70a95a91a112a95a78a115a106a95a104";
     request.fields['mob'] = EncryptionHelper.encryptString(storedPhone!);
     print('📤 Submitting leave config...');
     print('➡️ type: ${request.fields['type']}');
     print('➡️ mob: $storedPhone');
 
-    for (int i = 0; i < leaveTypes.length; i++) {
-      request.fields['leaveType[$i]'] = leaveTypes[i].id;
-      request.fields['annual_leave[$i]'] = leaveCounts[i];
-      print('🔁 Adding leaveType[$i] = ${leaveTypes[i].id}, annual_leave[$i] = ${leaveCounts[i]}');
-    }
+    // Send single values instead of lists
+    request.fields['leaveType'] = leaveType.id;
+    request.fields['annual_leave'] = leaveCount;
+    request.fields['year'] = year;
 
     print('🧾 Final request fields:');
     request.fields.forEach((key, value) {
@@ -78,7 +79,8 @@ class LeaveService {
       rethrow;
     }
   }
-  static Future<List<OrgLeave>?> fetchorgleaves() async {
+
+  static Future<List<OrgLeave>?> fetchorgleaves({required int year}) async {
     final storedPhone = await SharedPrefHelper.getPhone();
     print('📞 Phone from SharedPreferences: $storedPhone');
 
@@ -90,6 +92,7 @@ class LeaveService {
     request.fields.addAll({
       'type': '99a97a112a75a110a99a72a97a93a114a97a102',
       'mob': EncryptionHelper.encryptString(storedPhone!),
+      'year' : year.toString(),
     });
 
     try {

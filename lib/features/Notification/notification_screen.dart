@@ -30,10 +30,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(
           children: [
-            CustomTabWidget(
-              tabTitles: ["General", "Leave"],
-              controller: tabController,
-            ),
+
 
             AppSpacing.small(context),
           ],

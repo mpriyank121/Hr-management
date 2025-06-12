@@ -39,7 +39,14 @@ class fontStyles {
     color: Colors.white,
     fontSize: 14,
   );
-
+  static const TextStyle subHeadingStyle = TextStyle(
+    color: Color(0xFF000000), // #000
+    fontFamily: 'Urbanist',
+    fontSize: 14,
+    fontWeight: FontWeight.w500,
+    height: 1.6, // 160% = 1.6
+    letterSpacing: 0.2,
+  );
 
 }
 

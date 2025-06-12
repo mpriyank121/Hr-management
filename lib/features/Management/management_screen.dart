@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get/get.dart';
+import 'package:hr_management/config/style.dart';
 import '../../config/App_margin.dart';
 import '../../config/app_spacing.dart';
 import '../../config/font_style.dart';
@@ -7,15 +9,13 @@ import '../../core/widgets/App_bar.dart';
 import '../../core/widgets/Department_status_box.dart';
 import '../Attendence/attendence_screen.dart';
 import '../Employees/Widgets/department_employee_list.dart';
-
+import '../Employees/controllers/employee_controller.dart';
 import 'Widgets/Star_tile.dart';
 import 'Widgets/bordered_container.dart';
-import 'Widgets/department_widget.dart';
-import 'Widgets/employee_clock_screen.dart';
-import 'model/employee_model.dart';
 
 class ManagementScreen extends StatelessWidget {
   final List<String> departments = ['Finance', 'Engineering', 'Human Resources'];
+  final EmployeeController employeeController = Get.put(EmployeeController());
 
   @override
   Widget build(BuildContext context) {
@@ -26,128 +26,100 @@ class ManagementScreen extends StatelessWidget {
         leading: IconButton(
           icon: SvgPicture.asset('assets/images/bc 3.svg'),
           onPressed: () {},
-        ),        title: 'Management',
+        ),
+        title: 'Management',
         showTrailing: true,
-
-
       ),
-      body: AppMargin(child: ListView(
-        children: [
-          AppSpacing.small(context),
-          //_buildStatusSection(context),
-          AppSpacing.small(context),
-          _attendanceStats( screenHeight),
-          AppSpacing.small(context),
-          BorderedContainer(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _workingHoursSection(),
-                AppSpacing.small(context),
-                DepartmentEmployeeList(
-                  onTapRoute: () => AttendancePage(title: ''),
+      body: AppMargin(
+        child: Obx(() {
+          final totalEmployees = employeeController.employeeList.length;
+          return ListView(
+            children: [
+              AppSpacing.small(context),
+              BorderedContainer(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Total Employees', style: FontStyles.subHeadingStyle()),
+                    Text(
+                      totalEmployees.toString(),
+                      style: FontStyles.subHeadingStyle(
+                        color: Color(0xFF12D18E)
+
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ],
-      )),
+              ),
+              AppSpacing.small(context),
+              _attendanceStats(screenHeight),
+              AppSpacing.small(context),
+              BorderedContainer(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _workingHoursSection(),
+                    AppSpacing.small(context),
+                    DepartmentEmployeeList(
+                      showEditButton: true,
+                      onTapRoute: () => AttendancePage(title: ''),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        }),
+      ),
     );
   }
 
-  // Widget _buildStatusSection(BuildContext context) {
-  //   final allEmployees = DummyData.departmentWiseEmployees.values.expand((e) => e).toList();
-  //
-  //   final statusColorMap = {
-  //     EmployeeStatus.notClockedIn: const Color(0xFFF54336),
-  //     EmployeeStatus.clockedIn: const Color(0xFF1A96F0),
-  //     EmployeeStatus.onLeave: const Color(0xFF607D8A),
-  //   };
-  //
-  //   final boxes = <Widget>[];
-  //
-  //   for (var status in [EmployeeStatus.clockedIn, EmployeeStatus.notClockedIn, EmployeeStatus.onLeave]) {
-  //     final filtered = allEmployees.where((e) => e.status == status).toList();
-  //     if (filtered.isNotEmpty) {
-  //       boxes.add(
-  //           DepartmentStatusBox(
-  //             title: _statusLabel(status),
-  //             borderColor: statusColorMap[status]!,
-  //             employees: filtered, // filtered is List<Employee>
-  //           ));
-  //
-  //       }
-  //   }
-  //
-  //   return LayoutBuilder(
-  //     builder: (context, constraints) {
-  //       double spacing = 12;
-  //       double boxWidth = (constraints.maxWidth - spacing) / 2;
-  //
-  //       return Wrap(
-  //         spacing: spacing,
-  //         runSpacing: spacing,
-  //         children: List.generate(boxes.length, (i) {
-  //           return SizedBox(
-  //             width: boxWidth,
-  //             child: boxes[i],
-  //           );
-  //         }),
-  //       );
-  //     },
-  //   );
-  // }
-
-
   Widget _attendanceStats(double screenHeight) {
-
     return Column(
       children: [
-        // First Row with 2 tiles
         Row(
           children: [
             Expanded(
-              child:SizedBox(
-                height: screenHeight * 0.13, // 20% of screen height
+              child: SizedBox(
+                height: screenHeight * 0.13,
                 child: StatTile(
-                icon: Image.asset('assets/images/employee_leave_icon.png'),
-                percent: '12.8%',
-                title: 'Employees on Leave',
-                subtitle: 'Decreased vs last month',
-                percentColor: Colors.green,
-              ),)
+                  icon: Image.asset('assets/images/employee_leave_icon.png'),
+                  percent: '12.8%',
+                  title: 'Employees on Leave',
+                  subtitle: 'Decreased vs last month',
+                  percentColor: Colors.green,
+                ),
+              ),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
-
-              child:SizedBox(
-                height: screenHeight * 0.13, // 20% of screen height
+              child: SizedBox(
+                height: screenHeight * 0.13,
                 child: StatTile(
-                icon: Image.asset('assets/images/late_employee_con.png'),
-                percent: '6.8%',
-                title: 'Late Employees',
-                subtitle: 'Decreased vs last month',
-                percentColor: Colors.red,
-              ),)
+                  icon: Image.asset('assets/images/late_employee_con.png'),
+                  percent: '6.8%',
+                  title: 'Late Employees',
+                  subtitle: 'Decreased vs last month',
+                  percentColor: Colors.red,
+                ),
+              ),
             ),
           ],
         ),
-        SizedBox(height: 12),
-
-        // Second Row with 1 tile
+        const SizedBox(height: 12),
         Row(
           children: [
             Expanded(
-              child:SizedBox(
-                height: screenHeight * 0.13, // 20% of screen height
-
+              child: SizedBox(
+                height: screenHeight * 0.13,
                 child: StatTile(
-                icon:Image.asset('assets/images/late_employee_con.png'),
-                percent: '6.8%',
-                title: 'Late Employees',
-                subtitle: 'Decreased vs last month',
-                percentColor: Colors.red,
-              ), )
+                  icon: Image.asset('assets/images/late_employee_con.png'),
+                  percent: '6.8%',
+                  title: 'Late Employees',
+                  subtitle: 'Decreased vs last month',
+                  percentColor: Colors.red,
+                ),
+              ),
             ),
           ],
         ),
@@ -155,9 +127,8 @@ class ManagementScreen extends StatelessWidget {
     );
   }
 
-
   Widget _workingHoursSection() {
-    return  Column(
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text("Working Hours", style: FontStyles.subHeadingStyle()),
@@ -168,20 +139,8 @@ class ManagementScreen extends StatelessWidget {
             Text("This Month", style: FontStyles.subTextStyle()),
           ],
         ),
-        SizedBox(height: 8),
+        const SizedBox(height: 8),
       ],
     );
-
   }
-  // String _statusLabel(EmployeeStatus status) {
-  //   switch (status) {
-  //     case EmployeeStatus.notClockedIn:
-  //       return "Not Clocked In";
-  //     case EmployeeStatus.clockedIn:
-  //       return "Clocked In";
-  //     case EmployeeStatus.onLeave:
-  //       return "On Leave";
-  //   }
-  // }
-
 }

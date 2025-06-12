@@ -1,4 +1,6 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_management/core/widgets/custom_toast.dart';
 
 import '../models/job_type_model.dart';
 import '../services/job_type_service.dart';
@@ -13,6 +15,7 @@ class JobTypeController extends GetxController {
     super.onInit();
     loadJobTypes();
   }
+
   void loadJobTypes() async {
     try {
       isLoading.value = true;
@@ -25,14 +28,16 @@ class JobTypeController extends GetxController {
           .map((item) => JobType.fromJson(item as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: e.toString(),
+        isError: true,
+      );
     } finally {
       isLoading.value = false;
     }
   }
-
-
-
 
   void selectJobType(JobType? jobType) {
     selectedJobType.value = jobType;

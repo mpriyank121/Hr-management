@@ -63,29 +63,45 @@ class NewEmployeeService {
   static Future<EmployeeDetailModel?> fetchEmployeeById(String empId) async {
     try {
       final storedPhone = await SharedPrefHelper.getPhone();
+      print('📱 Fetching employee details for ID: $empId');
+      print('📱 Using phone: $storedPhone');
+
       final response = await http.post(
         Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/home.php'),
         body: {
           'type': "96a94a109a62a102a105a61a90a109a90a105", // Get employee details
-          'mob': EncryptionHelper.encryptString(storedPhone!), // use actual phone if needed
-          'emp_id':EncryptionHelper.encryptString(empId),
+          'mob': EncryptionHelper.encryptString(storedPhone!),
+          'emp_id': EncryptionHelper.encryptString(empId), // Encrypt the ID
         },
       );
 
+      print('📡 Response status: ${response.statusCode}');
+      print('📡 Response body: ${response.body}');
+
       if (response.statusCode == 200) {
         final decoded = jsonDecode(response.body);
-        print('Decoded data: ${decoded['data']}');
-        print('Type: ${decoded['data'].runtimeType}');
+        print('📦 Decoded data: ${decoded['data']}');
+        print('📦 Data type: ${decoded['data'].runtimeType}');
 
         if (decoded['status'] == true && decoded['data'] != null) {
           final data = decoded['data'];
           if (data is List && data.isNotEmpty) {
-            return EmployeeDetailModel.fromJson(data[0]);
+            print('✅ Found employee data: ${data[0]}');
+            final employeeData = data[0];
+            // Ensure the ID is set correctly
+            employeeData['emp_id'] = empId;
+            return EmployeeDetailModel.fromJson(employeeData);
+          } else {
+            print('❌ No employee data found in response');
           }
+        } else {
+          print('❌ API returned error: ${decoded['message']}');
         }
+      } else {
+        print('❌ HTTP error: ${response.statusCode}');
       }
     } catch (e) {
-      print('[EXCEPTION] $e');
+      print('🚨 Error fetching employee details: $e');
     }
     return null;
   }

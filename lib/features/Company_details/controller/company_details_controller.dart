@@ -5,8 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:hr_management/core/encryption/encryption_helper.dart';
 import 'package:http/http.dart' as http;
+import 'package:hr_management/core/widgets/custom_toast.dart';
 
 import '../../../core/services/auth_service.dart';
+import '../../../core/widgets/registration_popup.dart';
 import '../data/organization_service.dart';
 
 // Replace your current controller with this:
@@ -68,8 +70,7 @@ class CompanyDetailsController extends GetxController {
   }
 
   Future<void> onPincodeChanged(String pin) async {
-    // Only proceed if the user actually changed it manually
-    if (!userManuallyChangedPincode.value) return;
+    // Remove the userManuallyChangedPincode check since we want it to work in both modes
     if (pin.length != 6) return;
 
     isFetchingLocation.value = true;
@@ -99,13 +100,28 @@ class CompanyDetailsController extends GetxController {
           stateController.text = stateName.value;
           cityController.text = cityName.value;
         } else {
-          Get.snackbar("Error", "Invalid PIN Code or no data found");
+          CustomToast.showMessage(
+            context: Get.context!,
+            title: "Error",
+            message: "Invalid PIN Code or no data found",
+            isError: true,
+          );
         }
       } else {
-        Get.snackbar("Error", "Failed to fetch location: ${response.reasonPhrase}");
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Error",
+          message: "Failed to fetch location: ${response.reasonPhrase}",
+          isError: true,
+        );
       }
     } catch (e) {
-      Get.snackbar("Error", "Exception occurred: $e");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Exception occurred: $e",
+        isError: true,
+      );
     } finally {
       isFetchingLocation.value = false;
     }
@@ -148,25 +164,24 @@ class CompanyDetailsController extends GetxController {
       final decoded = jsonDecode(responseBody);
 
       if (decoded['status'] == true) {
-        Get.snackbar("Success", "Company registered successfully!",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.green.withOpacity(0.8),
-          colorText: Colors.white,
-        );
+        showRegistrationCompletedDialog(Get.context!);
+
         // Optionally reset form here
       } else {
-        Get.snackbar("Failed", decoded['message'] ?? "Something went wrong.",
-          snackPosition: SnackPosition.BOTTOM,
-          backgroundColor: Colors.red.withOpacity(0.8),
-          colorText: Colors.white,
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Failed",
+          message: decoded['message'] ?? "Something went wrong.",
+          isError: true,
         );
       }
     } catch (e) {
       Get.back();
-      Get.snackbar("Error", "An error occurred during registration. Please try again.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "An error occurred during registration. Please try again.",
+        isError: true,
       );
     }
   }
@@ -183,19 +198,21 @@ class CompanyDetailsController extends GetxController {
         panNumberController.text.trim().isEmpty ||
         panImage == null ||
         orgLogo == null) {
-      Get.snackbar("Missing Information", "Please fill in all required fields marked with *.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.orange.withOpacity(0.9),
-        colorText: Colors.white,
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Missing Information",
+        message: "Please fill in all required fields marked with *.",
+        isError: true,
       );
       return false;
     }
 
     if (!isPhoneVerified.value) {
-      Get.snackbar("Phone Not Verified", "Please verify your phone number before registering.",
-        snackPosition: SnackPosition.BOTTOM,
-        backgroundColor: Colors.red.withOpacity(0.8),
-        colorText: Colors.white,
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Phone Not Verified",
+        message: "Please verify your phone number before registering.",
+        isError: true,
       );
       return false;
     }
@@ -206,7 +223,12 @@ class CompanyDetailsController extends GetxController {
   Future<void> sendOtpToUser() async {
     final phone = phoneController.text.trim();
     if (phone.isEmpty) {
-      Get.snackbar("Error", "Please enter phone number");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Please enter phone number",
+        isError: true,
+      );
       return;
     }
 
@@ -215,12 +237,27 @@ class CompanyDetailsController extends GetxController {
       if (response['status'] == true) {
         isOtpSent.value = true;
         isPhoneVerified.value = false;
-        Get.snackbar("Success", response['message'] ?? "OTP sent");
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Success",
+          message: response['message'] ?? "OTP sent",
+          isError: false,
+        );
       } else {
-        Get.snackbar("Error", response['message'] ?? "Failed to send OTP");
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Error",
+          message: response['message'] ?? "Failed to send OTP",
+          isError: true,
+        );
       }
     } catch (e) {
-      Get.snackbar("Error", e.toString());
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: e.toString(),
+        isError: true,
+      );
     }
   }
 
@@ -229,7 +266,12 @@ class CompanyDetailsController extends GetxController {
     final otp = otpController.text.trim();
 
     if (otp.isEmpty) {
-      Get.snackbar("Error", "Enter OTP");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Enter OTP",
+        isError: true,
+      );
       return;
     }
 
@@ -239,17 +281,42 @@ class CompanyDetailsController extends GetxController {
       if (response is Map<String, dynamic>) {
         if (response['success'] == true) {
           isPhoneVerified.value = true;
-          Get.snackbar("Verified", response['message'] ?? "OTP Verified");
+          CustomToast.showMessage(
+            context: Get.context!,
+            title: "Verified",
+            message: response['message'] ?? "OTP Verified",
+            isError: false,
+          );
         } else {
-          Get.snackbar("Failed", response['message'] ?? "Invalid OTP");
+          CustomToast.showMessage(
+            context: Get.context!,
+            title: "Failed",
+            message: response['message'] ?? "Invalid OTP",
+            isError: true,
+          );
         }
       } else if (response is List && response.isEmpty) {
-        Get.snackbar("Error", "Server returned an empty list");
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Error",
+          message: "Server returned an empty list",
+          isError: true,
+        );
       } else {
-        Get.snackbar("Error", "Unexpected response format");
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: "Error",
+          message: "Unexpected response format",
+          isError: true,
+        );
       }
     } catch (e) {
-      Get.snackbar("Error", "Exception: $e");
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: "Error",
+        message: "Exception: $e",
+        isError: true,
+      );
     }
   }
 

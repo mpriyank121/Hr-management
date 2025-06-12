@@ -58,16 +58,18 @@ class LoginScreen extends StatelessWidget {
                 decoration: InputDecoration(
                   labelText: 'Mobile Number',
                   hintText: 'Enter your mobile number',
-                  prefixIcon: Padding(
-                    padding: EdgeInsets.only(
-                      left: screenWidth * 0.03,
-                      top: screenHeight * 0.015,
-                    ),
+                  prefix: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
                     child: Text('+91', style: fontStyles.headingStyle),
                   ),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(screenWidth * 0.025),
-                    borderSide: const BorderSide(color: Colors.blue, width: 2),
+                  contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.grey),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: Colors.blue, width: 2),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                 ),
               ),
@@ -75,23 +77,34 @@ class LoginScreen extends StatelessWidget {
               const Spacer(),
 
               /// ✅ Continue Button
-              PrimaryButton(
-                text: 'Continue',
-                onPressed: () async {
-                  await authController.sendOtpToUser();
-
-                  if (authController.isOtpSent.isTrue) {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => OtpPage(
-                          phone: authController.phoneController.text.trim(),
+              Obx(() => PrimaryButton(
+                text: authController.isLoading.value ? 'Sending OTP...' : 'Continue',
+                icon: authController.isLoading.value
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
                         ),
-                      ),
-                    );
-                  }
-                },
-              ),
+                      )
+                    : null,
+                onPressed: authController.isLoading.value
+                    ? null
+                    : () async {
+                        await authController.sendOtpToUser();
+                        if (authController.isOtpSent.value) {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => OtpPage(
+                                phone: authController.phoneController.text.trim(),
+                              ),
+                            ),
+                          );
+                        }
+                      },
+              ))
             ],
           ),
         ),

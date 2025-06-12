@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../../../config/font_style.dart';
 import '../../Company_details/Company_details_screen.dart';
 import '../../Holiday_List_Page/holiday_list_screen.dart';
+import '../../Leave_request/leave_approval_screen.dart';
 import 'leave_page.dart';
 import 'leave_request_form.dart';
 
@@ -36,10 +37,16 @@ class MenuListWidget extends StatelessWidget {
             () => Get.to(() => LeaveConfigScreen()),
       ),
       _MenuItem(
-        'Leave Request',
+        'Create Leave',
         'assets/images/User_Remove.png',
             () => Get.to(() =>  RequestLeavePage()),
       ),
+      _MenuItem(
+        'Leave Request',
+        'assets/images/User_Remove.png',
+            () => Get.to(() =>  LeaveApprovalScreen()),
+      ),
+
     ];
 
     return ListView.separated(

@@ -11,7 +11,7 @@ class PrimaryButton extends StatelessWidget {
   final double? heightFactor;
   final Color? buttonColor;
   final Color? textColor;
-  final Widget? icon; // ✅ Added icon parameter
+  final Widget? icon;
 
   const PrimaryButton({
     Key? key,
@@ -21,7 +21,7 @@ class PrimaryButton extends StatelessWidget {
     this.heightFactor,
     this.buttonColor,
     this.textColor,
-    this.icon, // ✅ New parameter
+    this.icon,
   }) : super(key: key);
 
   @override
@@ -45,20 +45,19 @@ class PrimaryButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(PrimaryButtonConfig.borderRadius),
           ),
           child: Row(
-            mainAxisSize: MainAxisSize.min, // ✅ Ensures compact button size
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
-
+              if (icon != null) ...[
+                icon!,
+                const SizedBox(width: 8),
+              ],
               Text(
                 text,
                 style: AppTextStyles.buttonText.copyWith(
-                  color: textColor ?? Colors.white, // ✅ Allows text color customization
+                  color: textColor ?? Colors.white,
                 ),
               ),
-              const SizedBox(width: 8), // ✅ Spacing between icon & text
-
-              if (icon != null) ...[
-                icon!,
-              ],
             ],
           ),
         ),

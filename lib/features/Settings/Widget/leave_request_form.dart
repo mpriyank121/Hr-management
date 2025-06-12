@@ -29,8 +29,6 @@ class _RequestLeavePageState extends State<RequestLeavePage> {
   final LeaveTypeController controller = Get.put(LeaveTypeController());
   final LeaveController controllers = Get.put(LeaveController());
 
-
-
   @override
   void initState() {
     super.initState();
@@ -111,7 +109,7 @@ class _RequestLeavePageState extends State<RequestLeavePage> {
                     LeaveContainer(child:  Obx(() {
 
                       return CustomDropdown<OrgLeave>(
-                        isExpanded: true,
+
                         decoration: const InputDecoration(
                           hintText: "Select Leave Type",
                           border: InputBorder.none,

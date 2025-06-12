@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hr_management/config/app_spacing.dart';
 import 'package:hr_management/core/widgets/primary_button.dart';
 import 'package:hr_management/features/Company_details/Company_details_screen.dart';
+import '../../Attendence_location/attendence_location.dart';
 import '../model/plan_model.dart'; // Adjust path as needed
 
 class PlanCard extends StatelessWidget {
@@ -59,8 +60,8 @@ class PlanCard extends StatelessWidget {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (_) => CompanyDetailsScreen(
-                          isEditMode: false,
+                        builder: (_) => AttendanceLocationSetupScreen(
+
                         ),
                       ),
                     );

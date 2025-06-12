@@ -34,8 +34,9 @@ class EmployeeDetailModel {
   });
 
   factory EmployeeDetailModel.fromJson(Map<String, dynamic> json) {
+    print('📝 Parsing employee data: $json');
     return EmployeeDetailModel(
-      id: '', // If there's no `id`, leave it empty or handle differently
+      id: json['emp_id']?.toString() ?? '',
       name: json['emp_name'] ?? '',
       phone: json['phone'] ?? '',
       email: json['email'] ?? '',
