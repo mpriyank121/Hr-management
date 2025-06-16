@@ -28,6 +28,7 @@ import 'package:intl/intl.dart';
 import '../../config/app_spacing.dart';
 import '../../core/widgets/App_bar.dart';
 import '../../core/widgets/custom_toast.dart';
+import '../Employees/controllers/employee_controller.dart';
 
 class NewEmployeeForm extends StatefulWidget {
   final String? empId;
@@ -257,19 +258,17 @@ class _NewEmployeeFormState extends State<NewEmployeeForm> {
         positionId: positionController.selectedPosition.value!.id,
         EmployeeCode: employeeCodeController.text,
         date: startDateController.text,
+        panFilePath: panImage != null ? panImage!.path : null,
+        profilePath: profileImage != null ? profileImage!.path : null,
       );
 
       if (widget.empId != null) {
         await employeeController.updateCurrentEmployee(widget.empId!, newEmployee);
-        Get.back(); // Close loading dialog
-        departmentController.fetchDepartments();
-        employeeController.fetchEmployee('');
-        Get.back(); // Return to previous screen
+        await Get.find<EmployeeController>().fetchEmployees();
+        Get.back(); // Close loading dialog or screen
       } else {
         await employeeController.submitNewEmployee(newEmployee);
-        Get.back(); // Close loading dialog
-        departmentController.fetchDepartments();
-        employeeController.fetchEmployee('');
+        await Get.find<EmployeeController>().fetchEmployees();
         Get.back(); // Return to previous screen
       }
     } catch (e) {

@@ -4,13 +4,14 @@ class SalaryStructureModel {
   final String departmentId;
   final String salaryType; // "CTC" or "Take Home"
   final double basicSalary;
-  final double hra;
   final double pf;
   final double esi;
-  final double professionalTax;
+  final double hra;
   final double totalDeductions;
   final double netSalary;
   final double ctc;
+  final double? otherAllowances;
+  final int? deductionKey;
 
   SalaryStructureModel({
     required this.employeeCode,
@@ -18,13 +19,15 @@ class SalaryStructureModel {
     required this.departmentId,
     required this.salaryType,
     required this.basicSalary,
-    required this.hra,
     required this.pf,
     required this.esi,
-    required this.professionalTax,
+    required this.hra,
     required this.totalDeductions,
     required this.netSalary,
     required this.ctc,
+    this.deductionKey,
+    this.otherAllowances
+
   });
 
   Map<String, dynamic> toJson() {
@@ -32,15 +35,15 @@ class SalaryStructureModel {
       'employee_code': employeeCode,
       'employee_name': employeeName,
       'department_id': departmentId,
-      'salary_type': salaryType,
-      'basic_salary': basicSalary,
       'hra': hra,
-      'pf': pf,
-      'esi': esi,
-      'professional_tax': professionalTax,
       'total_deductions': totalDeductions,
-      'net_salary': netSalary,
-      'ctc': ctc,
+      'net_amount': netSalary,
+      "basic_pay" : basicSalary,
+      "pf_employee" : pf,
+      "other_pay" : otherAllowances,
+      "esic_employee" : esi,
+      "ctc" : ctc,
+      "salary_type" : salaryType,
     };
   }
-} 
+}

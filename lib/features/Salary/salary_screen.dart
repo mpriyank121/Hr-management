@@ -41,13 +41,6 @@ class _SalaryScreenState extends State<SalaryScreen> {
     }
   }
 
-  void _handleMenuSelection(String value) {
-    if (value == 'department') {
-      Get.to(() => AddNewDepartmentScreen(phone: ''));
-    } else if (value == 'employee') {
-      Get.to(() => SalaryStructureForm());
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -64,21 +57,37 @@ class _SalaryScreenState extends State<SalaryScreen> {
         child: Column(
           children: [
             AppSpacing.small(context),
-            TotalSalaryCard(
-              totalSalary: '',
-              onHistoryTap: () {  },
-            ),
+            TotalSalaryCard(totalSalary: '', onHistoryTap: () {}),
             AppSpacing.small(context),
             GroupedEmployeeList(
               onTap: (employee) {
-                Get.to(() => EmployeeSalaryScreen(title: employee.name));
+                Get.to(() => EmployeeSalaryScreen(
+                  title: employee.name,
+                  employeeCode: employee.empCode,
+                ));
               },
             ),
           ],
         ),
       ),
       floatingActionButton: FloatingActionButtonWithMenu(
-        onMenuItemSelected: _handleMenuSelection,
+        menuItems: [
+          MenuItem(
+            icon: Icons.apartment,
+            text: 'Salary',
+            value: 'Salary_structure',
+          ),
+        ],
+        onMenuItemSelected: (value) {
+          switch (value) {
+            case 'Salary_structure':
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => SalaryStructureForm()),
+              );
+              break;
+          }
+        },
       ),
     );
   }

@@ -52,16 +52,17 @@ class ManagementScreen extends StatelessWidget {
                 ),
               ),
               AppSpacing.small(context),
-              _attendanceStats(screenHeight),
+              // _attendanceStats(screenHeight),
               AppSpacing.small(context),
               BorderedContainer(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    AppSpacing.small(context),
                     _workingHoursSection(),
                     AppSpacing.small(context),
                     DepartmentEmployeeList(
-                      showEditButton: true,
+                      showEditButton: false,
                       onTapRoute: () => AttendancePage(title: ''),
                     ),
                   ],
@@ -135,7 +136,7 @@ class ManagementScreen extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text("Total 216 hr  90%", style: FontStyles.subTextStyle()),
+            Text("Total 216 hr ", style: FontStyles.subTextStyle()),
             Text("This Month", style: FontStyles.subTextStyle()),
           ],
         ),
@@ -143,4 +144,5 @@ class ManagementScreen extends StatelessWidget {
       ],
     );
   }
+
 }

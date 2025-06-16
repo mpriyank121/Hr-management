@@ -7,6 +7,7 @@ class EmployeeController extends GetxController {
 
   // Group employees by department as a computed property
   Map<String, List<Employee>> get departmentWiseEmployees {
+
     final Map<String, List<Employee>> map = {};
     for (var emp in employeeList) {
       if (map.containsKey(emp.department)) {
@@ -17,6 +18,8 @@ class EmployeeController extends GetxController {
     }
     return map;
   }
+  final RxList<Employee> assignedEmployees = <Employee>[].obs;
+  final RxList<Employee> unassignedEmployees = <Employee>[].obs;
 
   @override
   void onInit() {
@@ -24,10 +27,12 @@ class EmployeeController extends GetxController {
     fetchEmployees();
   }
 
-  void fetchEmployees() async {
+  Future<void> fetchEmployees() async {
     try {
-      final employees = await EmployeeService.fetchEmployees();
-      employeeList.assignAll(employees);
+      final employeeData = await EmployeeService.fetchEmployees();
+      assignedEmployees.assignAll(employeeData['assigned'] ?? []);
+      unassignedEmployees.assignAll(employeeData['unassigned'] ?? []);
+      employeeList.assignAll(employeeData['assigned'] ?? []); // Ensure UI using employeeList works
     } catch (e) {
       print("Error fetching employees: $e");
     }

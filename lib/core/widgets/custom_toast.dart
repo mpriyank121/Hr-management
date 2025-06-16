@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:get/get.dart';
 
 class CustomToast {
@@ -7,6 +8,73 @@ class CustomToast {
     required String message,
     bool isError = false,
     Duration duration = const Duration(seconds: 2),
+  }) {
+    if (isError) {
+      // Show Cupertino Alert Dialog for errors
+      _showErrorDialog(context: context, message: message);
+    } else {
+      // Show toast for success messages
+      _showSuccessToast(context: context, message: message, duration: duration);
+    }
+  }
+
+  static void _showErrorDialog({
+    required BuildContext context,
+    required String message,
+  }) {
+    try {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return CupertinoAlertDialog(
+            title: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  CupertinoIcons.exclamationmark_triangle_fill,
+                  color: CupertinoColors.systemRed,
+                  size: 20,
+                ),
+                SizedBox(width: 8),
+                Text('Error'),
+              ],
+            ),
+            content: Text(message),
+            actions: [
+              CupertinoDialogAction(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      // Fallback to Get.snackbar if context is not available
+      Get.snackbar(
+        'Error',
+        message,
+        backgroundColor: Colors.red.shade700,
+        colorText: Colors.white,
+        duration: const Duration(seconds: 3),
+        snackPosition: SnackPosition.TOP,
+        margin: const EdgeInsets.all(20),
+        borderRadius: 8,
+        icon: const Icon(
+          Icons.error_outline,
+          color: Colors.white,
+          size: 20,
+        ),
+      );
+    }
+  }
+
+  static void _showSuccessToast({
+    required BuildContext context,
+    required String message,
+    required Duration duration,
   }) {
     try {
       final overlay = Overlay.of(context);
@@ -20,7 +88,7 @@ class CustomToast {
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               decoration: BoxDecoration(
-                color: isError ? Colors.red.shade700 : Colors.green.shade700,
+                color: Colors.green.shade700,
                 borderRadius: BorderRadius.circular(8),
                 boxShadow: [
                   BoxShadow(
@@ -33,8 +101,8 @@ class CustomToast {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(
-                    isError ? Icons.error_outline : Icons.check_circle_outline,
+                  const Icon(
+                    Icons.check_circle_outline,
                     color: Colors.white,
                     size: 20,
                   ),
@@ -63,16 +131,16 @@ class CustomToast {
     } catch (e) {
       // Fallback to Get.snackbar if context is not available
       Get.snackbar(
-        isError ? 'Error' : 'Success',
+        'Success',
         message,
-        backgroundColor: isError ? Colors.red.shade700 : Colors.green.shade700,
+        backgroundColor: Colors.green.shade700,
         colorText: Colors.white,
         duration: duration,
         snackPosition: SnackPosition.TOP,
         margin: const EdgeInsets.all(20),
         borderRadius: 8,
-        icon: Icon(
-          isError ? Icons.error_outline : Icons.check_circle_outline,
+        icon: const Icon(
+          Icons.check_circle_outline,
           color: Colors.white,
           size: 20,
         ),
@@ -88,31 +156,28 @@ class CustomToast {
     bool isError = false,
     Duration duration = const Duration(seconds: 2),
   }) {
-    try {
-      final fullMessage = title != null ? '$title: $message' : message;
-      show(
-        context: context,
-        message: fullMessage,
-        isError: isError,
-        duration: duration,
-      );
-    } catch (e) {
-      // Fallback to Get.snackbar if context is not available
-      Get.snackbar(
-        title ?? (isError ? 'Error' : 'Success'),
-        message,
-        backgroundColor: isError ? Colors.red.shade700 : Colors.green.shade700,
-        colorText: Colors.white,
-        duration: duration,
-        snackPosition: SnackPosition.TOP,
-        margin: const EdgeInsets.all(20),
-        borderRadius: 8,
-        icon: Icon(
-          isError ? Icons.error_outline : Icons.check_circle_outline,
-          color: Colors.white,
-          size: 20,
-        ),
-      );
-    }
+    final fullMessage = title != null ? '$title: $message' : message;
+    show(
+      context: context,
+      message: fullMessage,
+      isError: isError,
+      duration: duration,
+    );
   }
-} 
+
+  // Additional helper methods for cleaner code usage
+  static void showError({
+    required BuildContext context,
+    required String message,
+  }) {
+    show(context: context, message: message, isError: true);
+  }
+
+  static void showSuccess({
+    required BuildContext context,
+    required String message,
+    Duration duration = const Duration(seconds: 2),
+  }) {
+    show(context: context, message: message, isError: false, duration: duration);
+  }
+}

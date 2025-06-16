@@ -6,6 +6,7 @@ import 'core/widgets/Nav_bar.dart';
 import 'package:hr_management/features/Holiday_List_Page/controller/holiday_controller.dart';
 import 'features/Welcome_page/welcome_page.dart';
 import 'features/upgrade_screen/upgrade_plans.dart';
+import 'features/Add_depart_and_employee/controller/department_type_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -15,6 +16,7 @@ Future<void> main() async {
 
   // Put your controllers here
   Get.put(HolidayController());
+  Get.put(DepartmentTypeController(), permanent: true);
 
   runApp(MyApp(isLoggedIn: isLoggedIn));
 }

@@ -41,30 +41,7 @@ class TotalSalaryCard extends StatelessWidget {
                 ),
               ),
               SizedBox(height: 10),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.black,
-                  backgroundColor: Colors.white,
-                  side: BorderSide(color: Colors.white),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  padding: EdgeInsets.symmetric(horizontal: 16),
-                ),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SalaryHistoryScreen(),
-                    ),
-                  );
-                },
-                icon: Icon(Icons.history),
-                label: Text(
-                  "History",
-                  style: FontStyles.subHeadingStyle(fontSize: 14),
-                ),
-              ),
+
             ],
           ),
         ),

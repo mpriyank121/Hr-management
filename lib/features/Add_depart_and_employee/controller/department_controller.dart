@@ -156,4 +156,44 @@ class DepartmentController extends GetxController {
     }
   }
 
+  Future<void> deleteDepartment({
+    required String departmentId,
+  }) async {
+    try {
+      isLoading.value = true;
+      final storedPhone = await SharedPrefHelper.getPhone();
+      final success = await DepartmentService.deleteDepartment(
+        department: departmentNameController.text.trim(),
+        supervisor: supervisorController.text.trim(),
+        storedPhone: storedPhone ?? '',
+        departmentId: departmentId,
+      );
+      if (success) {
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: 'Success',
+          message: 'Department deleted successfully',
+          isError: false,
+        );
+        await departmentController.fetchDepartments();
+        Get.back();
+      } else {
+        CustomToast.showMessage(
+          context: Get.context!,
+          title: 'Error',
+          message: 'Failed to delete department',
+          isError: true,
+        );
+      }
+    } catch (e) {
+      CustomToast.showMessage(
+        context: Get.context!,
+        title: 'Error',
+        message: 'Something went wrong: $e',
+        isError: true,
+      );
+    } finally {
+      isLoading.value = false;
+    }
+  }
 }

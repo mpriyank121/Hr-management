@@ -4,7 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 class FontStyles {
   static TextStyle headingStyle({
     Color color = Colors.black,
-    double fontSize = 22,
+    double fontSize = 18,
     FontWeight fontWeight = FontWeight.bold,
   }) {
     return GoogleFonts.roboto(

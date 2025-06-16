@@ -34,7 +34,7 @@ class _DepartmentWidgetState extends State<DepartmentWidget> {
             Expanded(
               child: Text(
                 widget.title,
-                style: FontStyles.subHeadingStyle(),
+                style: FontStyles.headingStyle(),
               ),
             ),
             if (widget.onEdit != null)

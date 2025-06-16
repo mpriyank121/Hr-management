@@ -10,65 +10,33 @@ class DepartmentTypeService {
   }) async {
     try {
       final storedPhone = await SharedPrefHelper.getPhone();
-
       if (storedPhone == null || storedPhone.isEmpty) {
         print('[ERROR] Phone number not found in SharedPreferences.');
         throw Exception('Phone number not found in SharedPreferences.');
       }
-
       final encryptedType = EncryptionHelper.encryptString(department);
-
-      print('[DEBUG] Fetching departments...');
-      print('[DEBUG] Raw Type: $department');
-      print('[DEBUG] Encrypted Type: $encryptedType');
-      print('[DEBUG] Phone: $storedPhone');
-
       final url = Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/home.php');
       final request = http.MultipartRequest('POST', url);
       request.fields.addAll({
         'type': encryptedType,
         'mob': EncryptionHelper.encryptString(storedPhone),
       });
-
-      print('[DEBUG] Sending request to: $url');
-      print('[DEBUG] Request Fields: ${request.fields}');
-
       final response = await request.send();
-
       if (response.statusCode == 200) {
         final body = await response.stream.bytesToString();
-        print('[DEBUG] Raw Response Body: $body');
-
         final decoded = json.decode(body);
-        print('[DEBUG] Decoded Response: $decoded');
-
         if (decoded['status'] == true) {
-          final List data = decoded['data'];
-          print('[DEBUG] Department Data: $data');
-
-          // Print each department's data for debugging
-          for (var dept in data) {
-            print('[DEBUG] Department Details:');
-            print('- ID: ${dept['id']}');
-            print('- Name: ${dept['department']}');
-            print('- Supervisor: ${dept['supervisor']}');
-            print('- Work Pattern: ${dept['work_pattern']}');
-          }
-
-          final departments = data.map((e) => DepartmentModel.fromJson(e)).toList();
-          print('[DEBUG] Parsed Departments: ${departments.map((d) => '${d.id}: ${d.department} (Supervisor: ${d.supervisor}, Work Pattern: ${d.workPattern})').join(', ')}');
-          return departments;
+          final List departments = decoded['data'];
+          return departments.map((e) => DepartmentModel.fromJson(e)).toList();
         } else {
-          print('[ERROR] API Error Message: ${decoded['message']}');
           throw Exception(decoded['message'] ?? 'Failed to fetch departments');
         }
       } else {
-        print('[ERROR] Network error: ${response.statusCode} - ${response.reasonPhrase}');
         throw Exception('Network error: ${response.statusCode} - ${response.reasonPhrase}');
       }
     } catch (e) {
       print('[ERROR] Exception while fetching departments: $e');
-      return []; // Return empty list on failure
+      return [];
     }
   }
 }

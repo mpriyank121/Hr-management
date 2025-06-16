@@ -151,16 +151,27 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
                           );
                         } else {
                           // Create mode
-                          controller.submitDepartment(
-                            widget.phone,
-                            workPatternController.selectedPattern.value!,
-                          );
+                        controller.submitDepartment(
+                          widget.phone,
+                          workPatternController.selectedPattern.value!,
+                        );
                         }
                       },
                     ),
                   ),
                 ],
               ),
+              if (widget.department != null) ...[
+                const SizedBox(height: 16),
+                PrimaryButton(
+                  text: "Delete Department",
+                  buttonColor: Colors.red,
+                  textColor: Colors.white,
+                  onPressed: () async {
+                    await controller.deleteDepartment(departmentId: widget.department!.id);
+                  },
+                ),
+              ],
             ],
           );
         }),

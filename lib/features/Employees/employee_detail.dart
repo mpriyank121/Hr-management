@@ -92,7 +92,7 @@ class _EmployeeSalaryScreenState extends State<EmployeeDetail> {
               AppSpacing.small(context),
 
               CustomTabWidget(
-                tabTitles: ["Details", "Salary", "Doc"],
+                tabTitles: ["Details", "Assets", "Doc"],
                 controller: tabController,
               ),
 

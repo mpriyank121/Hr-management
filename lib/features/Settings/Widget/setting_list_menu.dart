@@ -42,7 +42,7 @@ class MenuListWidget extends StatelessWidget {
             () => Get.to(() =>  RequestLeavePage()),
       ),
       _MenuItem(
-        'Leave Request',
+        'Employee Leave Requests',
         'assets/images/User_Remove.png',
             () => Get.to(() =>  LeaveApprovalScreen()),
       ),

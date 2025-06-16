@@ -19,10 +19,8 @@ class DepartmentTypeController extends GetxController {
   Future<bool> fetchDepartments() async {
     try {
       isLoading.value = true;
-
       final result = await DepartmentTypeService.fetchDepartmenttypes(department: 'department');
-      departmentList.assignAll(result); // ✅ Correct reactive update
-
+      departmentList.assignAll(result);
       return true; // ✅ Must return something
     } catch (e) {
       errorMessage.value = e.toString();
@@ -31,7 +29,6 @@ class DepartmentTypeController extends GetxController {
       isLoading.value = false;
     }
   }
-
 
   void selectDepartment(DepartmentModel? department) {
     selectedDepartment.value = department;

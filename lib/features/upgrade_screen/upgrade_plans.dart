@@ -23,7 +23,7 @@ class UpgradePlanScreen extends StatelessWidget {
     return Scaffold(
       appBar: CustomAppBar(
         title: "Upgrade Plan",
-        leading:  BackButton(),
+
       ),
       body: AppMargin(
         child: Column(

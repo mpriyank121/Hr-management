@@ -15,9 +15,8 @@ import '../Add_depart_and_employee/controller/department_type_controller.dart';
 import '../Add_depart_and_employee/department_form.dart';
 import '../Add_depart_and_employee/new_employee_form.dart';
 import '../Management/Widgets/bordered_container.dart';
-import '../Management/Widgets/employee_clock_screen.dart';
-import '../Management/model/employee_model.dart';
 import 'Widgets/department_employee_list.dart';
+import 'controllers/department_color_genrator.dart';
 import 'controllers/employee_controller.dart';
 import 'employee_detail.dart';
 import 'models/employee_model.dart';
@@ -30,7 +29,7 @@ class EmployeesScreen extends StatefulWidget {
 
 class _EmployeesScreenState extends State<EmployeesScreen> {
   final EmployeeController controller = Get.put(EmployeeController());
-  final DepartmentTypeController departmentController = Get.put(DepartmentTypeController());
+  final DepartmentTypeController departmentController = Get.find<DepartmentTypeController>();
 
   @override
   void initState() {
@@ -51,14 +50,6 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         return 'Part-Time';
       default:
         return 'Unknown';
-    }
-  }
-
-  void _handleMenuSelection(String value) {
-    if (value == 'department') {
-      Get.to(() => AddNewDepartmentScreen(phone: ''));
-    } else if (value == 'employee') {
-      Get.to(() => NewEmployeeForm());
     }
   }
 
@@ -84,8 +75,9 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       ),
       body: AppMargin(
         child: Obx(() {
-          final allEmployees = controller.employeeList;
-          if (allEmployees.isEmpty) {
+          final assigned = controller.assignedEmployees;
+          final unassigned = controller.unassignedEmployees;
+          if (assigned.isEmpty && unassigned.isEmpty) {
             return EmptyStateWidget(
               imagePath: 'assets/images/empty_employee.png',
               title: 'Empty',
@@ -95,7 +87,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 
           Map<String, double> statusCount = {};
           for (var status in EmploymentStatus.values) {
-            final count = allEmployees.where((e) => e.employmentStatus == status).length;
+            final count = assigned.where((e) => e.employmentStatus == status).length;
             if (count > 0) {
               statusCount[_statusToString(status)] = count.toDouble();
             }
@@ -118,7 +110,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
                       child: PieChartWidget(
                         dataMap: statusCount,
                         colorList: colors,
-                        centerText: '${allEmployees.length}\nTotal Employees',
+                        centerText: '${assigned.length}\nTotal Employees',
                         chartRadius: 150,
                         showLegend: true,
                         showChartValues: false,
@@ -133,7 +125,6 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
               BorderedContainer(
                 child: DepartmentEmployeeList(
                   showEditButton: true,
-
                 ),
               ),
               AppSpacing.small(context),
@@ -142,25 +133,38 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         }),
       ),
       floatingActionButton: FloatingActionButtonWithMenu(
-        onMenuItemSelected: _handleMenuSelection,
+        onMenuItemSelected: (value) {
+          switch (value) {
+            case 'department':
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => AddNewDepartmentScreen(phone: '',)),
+              );
+              break;
+            case 'employee':
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => NewEmployeeForm()),
+              );
+              break;
+          }
+        },
+        menuItems: [
+          MenuItem(icon: Icons.apartment, text: 'Department', value: 'department'),
+          MenuItem(icon: Icons.person, text: 'Employee', value: 'employee'),
+        ],
       ),
     );
+
   }
 
 
   Widget _buildStatusSection(BuildContext context) {
     final departmentMap = controller.departmentWiseEmployees;
-
-    final Map<String, Color> departmentColors = {
-      'Technical': const Color(0xFF1A96F0),
-      'Marketing': const Color(0xFFF54336),
-      'UI/UX': const Color(0xFF4CAF50),
-    };
-
     final boxes = <Widget>[];
 
     departmentMap.forEach((department, employees) {
-      final color = departmentColors[department] ?? Colors.grey;
+      final color = DepartmentColorGenerator.getColorForDepartment(department);
       boxes.add(
         _statusBox(
           department,
@@ -170,6 +174,19 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
         ),
       );
     });
+
+    // Add unassigned employees as a separate box if any
+    final unassigned = controller.unassignedEmployees;
+    if (unassigned.isNotEmpty) {
+      boxes.add(
+        _statusBox(
+          'Unassigned',
+          Colors.grey, // Use a distinct color for unassigned
+          unassigned,
+          context,
+        ),
+      );
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -189,6 +206,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
       },
     );
   }
+
   Widget _statusBox(
       String title,
       Color borderColor,
@@ -202,7 +220,7 @@ class _EmployeesScreenState extends State<EmployeesScreen> {
 
     return GestureDetector(
       onTap: () {
-        Get.to(() => ClockInScreen(employees: employees, title: title));
+        // Get.to(() => ClockInScreen(employees: employees, title: title));
       },
       child: Container(
         padding: const EdgeInsets.all(12),

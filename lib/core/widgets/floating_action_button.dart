@@ -2,15 +2,28 @@ import 'package:flutter/material.dart';
 
 class FloatingActionButtonWithMenu extends StatefulWidget {
   final void Function(String) onMenuItemSelected;
+  final List<MenuItem> menuItems;
 
   const FloatingActionButtonWithMenu({
     Key? key,
     required this.onMenuItemSelected,
+    required this.menuItems,
   }) : super(key: key);
 
   @override
   _FloatingActionButtonWithMenuState createState() =>
       _FloatingActionButtonWithMenuState();
+}
+class MenuItem {
+  final IconData icon;
+  final String text;
+  final String value;
+
+  MenuItem({
+    required this.icon,
+    required this.text,
+    required this.value,
+  });
 }
 
 class _FloatingActionButtonWithMenuState
@@ -26,21 +39,17 @@ class _FloatingActionButtonWithMenuState
 
     final double screenHeight = MediaQuery.of(context).size.height;
     final double screenWidth = MediaQuery.of(context).size.width;
-    final double menuHeight = 100; // Approximate total height of the menu
-    final double menuWidth = 150; // Approximate width of the menu
+    final double menuHeight = widget.menuItems.length * 50.0 + 16; // height per item + padding
+    final double menuWidth = 160;
 
-    // Determine if we have enough space above the FAB
     bool showAbove = offset.dy > menuHeight + 20;
 
-    // Calculate horizontal position to prevent cropping
     double leftPosition = offset.dx;
 
-    // If menu would go off the right edge, align it to the right edge of FAB
     if (leftPosition + menuWidth > screenWidth) {
       leftPosition = offset.dx + size.width - menuWidth;
     }
 
-    // Ensure it doesn't go off the left edge
     if (leftPosition < 16) {
       leftPosition = 16;
     }
@@ -48,7 +57,6 @@ class _FloatingActionButtonWithMenuState
     _overlayEntry = OverlayEntry(
       builder: (context) => Stack(
         children: [
-          // Dark transparent background
           GestureDetector(
             onTap: _removeOverlay,
             child: Container(
@@ -59,26 +67,27 @@ class _FloatingActionButtonWithMenuState
           ),
           Positioned(
             left: leftPosition,
-            top: showAbove ? offset.dy - menuHeight - 8 : offset.dy + size.height + 8,
+            top:
+            showAbove ? offset.dy - menuHeight - 8 : offset.dy + size.height + 8,
             child: Material(
               elevation: 8,
               borderRadius: BorderRadius.circular(8),
               child: Container(
                 width: menuWidth,
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                ),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _buildMenuItem(
-                      icon: Icons.apartment,
-                      text: 'Department',
-                      value: 'department',
-                    ),
-                    _buildMenuItem(
-                      icon: Icons.person,
-                      text: 'Employee',
-                      value: 'employee',
-                    ),
-                  ],
+                  children: widget.menuItems.map((item) {
+                    return _buildMenuItem(
+                      icon: item.icon,
+                      text: item.text,
+                      value: item.value,
+                    );
+                  }).toList(),
                 ),
               ),
             ),
@@ -102,13 +111,17 @@ class _FloatingActionButtonWithMenuState
       },
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.all(12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 18),
+            Icon(icon, size: 20, color: Colors.black87),
             const SizedBox(width: 8),
-            Text(text),
+            Expanded(
+              child: Text(
+                text,
+                style: const TextStyle(fontSize: 14, color: Colors.black87),
+              ),
+            ),
           ],
         ),
       ),

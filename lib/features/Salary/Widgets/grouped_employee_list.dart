@@ -36,7 +36,7 @@ class GroupedEmployeeList extends StatelessWidget {
                     children: [
                       Text(
                         department,
-                        style: FontStyles.subTextStyle(fontSize: 14),
+                        style: FontStyles.subTextStyle(fontSize: 22),
                       ),
                       const SizedBox(width: 8),
                       Expanded(

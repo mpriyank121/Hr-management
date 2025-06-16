@@ -30,6 +30,7 @@ class NewEmployeeService {
         'emp_type': employee.empTypeId,
         'doj': ?employee.date,
       "user_role": ?employee.UserRoleId,
+
       });
 
       if (employee.panFilePath != null && File(employee.panFilePath!).existsSync()) {
@@ -96,7 +97,7 @@ class NewEmployeeService {
           }
         } else {
           print('❌ API returned error: ${decoded['message']}');
-        }
+          }
       } else {
         print('❌ HTTP error: ${response.statusCode}');
       }
@@ -138,6 +139,11 @@ class NewEmployeeService {
         'ispanchange': isPanCardChanged.toString(),
       });
 
+      print('Updating employee:');
+      print('emp_id: $empId');
+      print('department: ${employee.departmentId}');
+      print('All fields: \\n${request.fields}');
+
       // Add PAN image file if changed
       if (isPanCardChanged &&
           employee.panFilePath != null &&
@@ -167,6 +173,7 @@ class NewEmployeeService {
       if (response.statusCode == 200) {
         final responseBody = await response.stream.bytesToString();
         final decoded = jsonDecode(responseBody);
+        print('Update response: $decoded');
         print('[✅] Update Employee Response: $decoded');
         return decoded['status'] == true;
       } else {

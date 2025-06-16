@@ -21,33 +21,16 @@ class WelcomePage extends StatelessWidget {
       height: 30,
     );
 
-    Widget menuItem(IconData icon, String text) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 10),
-        child: Row(
-          children: [
-            Icon(icon, color: Colors.green[700], size: 26),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                text,
-                style: FontStyles.subHeadingStyle(),
-              ),
-            ),
-          ],
-        ),
-      );
-    }
 
     return Scaffold(
       body: Stack(
         children: [
-          const CustomBackground(
+           CustomBackground(
             imagePath: 'assets/images/bg_image.png',
           ),
           SafeArea(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+              padding:  EdgeInsets.symmetric(horizontal: 25, vertical: 30),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
