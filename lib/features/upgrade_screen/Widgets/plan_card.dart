@@ -2,16 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:hr_management/config/app_spacing.dart';
 import 'package:hr_management/config/style.dart';
 import 'package:hr_management/core/widgets/primary_button.dart';
-import 'package:hr_management/features/Company_details/Company_details_screen.dart';
 import 'package:hr_management/features/Company_details/Widgets/custom_text_field.dart';
-import '../../Attendence_location/attendence_location.dart';
-import '../model/plan_model.dart'; // Adjust path as needed
+import '../model/plan_model.dart';
+import '../plan_review_screen.dart'; // Adjust path as needed
+
 
 class PlanCard extends StatefulWidget {
   final Plan plan;
   final bool isMonthly;
   final bool highlight;
   final String? badgeText;
+  final bool showPrimaryButton;
 
   const PlanCard({
     super.key,
@@ -19,6 +20,7 @@ class PlanCard extends StatefulWidget {
     required this.isMonthly,
     this.highlight = false,
     this.badgeText,
+    this.showPrimaryButton = true,
   });
 
   @override
@@ -45,7 +47,11 @@ class _PlanCardState extends State<PlanCard> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (_) => AttendanceLocationSetupScreen(),
+          builder: (_) => PlanReviewScreen(
+            plan: widget.plan,
+            employeeCount: result,
+            isMonthly: widget.isMonthly,
+          ),
         ),
       );
     }
@@ -86,10 +92,11 @@ class _PlanCardState extends State<PlanCard> {
                 ),
               )),
               Divider(color: Colors.grey.shade300),
-              PrimaryButton(
-                onPressed: () => _showEmployeeCountSelector(context),
-                text: (widget.isMonthly ? 'Subscribe Monthly' : 'Subscribe Yearly'),
-              ),
+              if (widget.showPrimaryButton)
+                PrimaryButton(
+                  onPressed: () => _showEmployeeCountSelector(context),
+                  text: (widget.isMonthly ? 'Subscribe Monthly' : 'Subscribe Yearly'),
+                ),
             ],
           ),
         ),

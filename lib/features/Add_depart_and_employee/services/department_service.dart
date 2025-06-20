@@ -27,13 +27,6 @@ class DepartmentService {
       Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/home.php'),
     );
 
-    // Use different type code for edit vs create
-
-    // print('Submitting department:');
-    // print('- Department: $department');
-    // print('- Work Type: $workType');
-    // print('- Supervisor: $supervisor');
-    // print('- Is Editing: $isEditing');
 
     request.fields.addAll({
       'type': '90a93a93a61a94a105a90a107a109a102a94a103a109a105',

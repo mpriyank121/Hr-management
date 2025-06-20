@@ -1,41 +1,91 @@
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import '../../config/app_spacing.dart';
+
+import '../../config/font_style.dart';
 import '../../core/widgets/App_bar.dart';
-import '../../core/widgets/Custom_tab_widget.dart';
-import '../Assets/assets_screen.dart';
-import '../Assets/models/asset_list_model.dart';
 
-class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key, required this.title});
-  final String title;
-
-  @override
-  State<NotificationScreen> createState() =>_NotificationScreenState();
-}
-
-class _NotificationScreenState extends State<NotificationScreen> {
-  final TabControllerX tabController = Get.put(TabControllerX());
-
-
+class NotificationScreen extends StatelessWidget {
+  const NotificationScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: "Notifications",
+        title: 'Notification',
         showBackButton: true,
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Column(
-          children: [
-
-
-            AppSpacing.small(context),
-          ],
-        ),
+      body: ListView(
+        padding: const EdgeInsets.all(16.0),
+        children: [
+          _buildNotificationItem(
+            context,
+            icon: Icons.shield_outlined,
+            title: 'Account Security Alert',
+            subtitle: 'We\'ve noticed some unusual activity on your account.',
+            time: '09:00 AM',
+          ),
+          const SizedBox(height: 16),
+          _buildNotificationItem(
+            context,
+            icon: Icons.download_outlined,
+            title: 'System Update Available',
+            subtitle: 'We\'ve noticed some unusual activity on your account.',
+            time: '09:00 AM',
+          ),
+          const SizedBox(height: 24),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16.0),
+            child: Text('Yesterday', style: FontStyles.subTextStyle()),
+          ),
+          _buildNotificationItem(
+            context,
+            icon: Icons.lock_open_outlined,
+            title: 'Password Reset Successful',
+            subtitle: 'We\'ve noticed some unusual activity on your account.',
+            time: '09:00 AM',
+          ),
+        ],
       ),
     );
   }
-}
+
+  Widget _buildNotificationItem(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required String time,
+  }) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.grey.shade300),
+          ),
+          child: Icon(icon, color: Colors.black, size: 24),
+        ),
+        const SizedBox(width: 16),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: FontStyles.subHeadingStyle(fontSize: 16),
+              ),
+              const SizedBox(height: 4),
+              Text(subtitle, style: FontStyles.subTextStyle()),
+              const SizedBox(height: 8),
+              Text(
+                time,
+                style: FontStyles.subTextStyle(color: Colors.grey),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+} 

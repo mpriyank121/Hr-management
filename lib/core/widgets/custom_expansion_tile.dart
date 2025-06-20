@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:hr_management/config/app_spacing.dart';
+import 'package:hr_management/features/Management/Widgets/bordered_container.dart';
 
 class CustomExpansionTile extends StatefulWidget {
   final Widget title;
@@ -12,7 +14,7 @@ class CustomExpansionTile extends StatefulWidget {
   final Color? collapsedBackgroundColor;
   final BorderRadius? borderRadius;
   final BoxBorder? border;
-  final List<BoxShadow>? boxShadow;
+
   final Duration? animationDuration;
   final Widget? leading;
   final Widget? trailing;
@@ -33,7 +35,6 @@ class CustomExpansionTile extends StatefulWidget {
     this.collapsedBackgroundColor,
     this.borderRadius,
     this.border,
-    this.boxShadow,
     this.animationDuration,
     this.leading,
     this.trailing,
@@ -86,24 +87,14 @@ class _CustomExpansionTileState extends State<CustomExpansionTile>
   }
 
   Widget _buildChildren(BuildContext context, Widget? child) {
-    return Container(
-      width: widget.width,
-      margin: widget.margin,
-      decoration: BoxDecoration(
-        color: _isExpanded
-            ? widget.backgroundColor ?? Colors.white
-            : widget.collapsedBackgroundColor ?? Colors.white,
-        borderRadius: widget.borderRadius,
-        border: widget.border,
-        boxShadow: widget.boxShadow,
-      ),
+    return BorderedContainer(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           InkWell(
             onTap: _handleTap,
             child: Padding(
-              padding: widget.padding ?? const EdgeInsets.all(8),
+              padding: widget.padding ?? const EdgeInsets.all(2),
               child: Row(
                 children: [
                   if (widget.leading != null) ...[
@@ -136,9 +127,18 @@ class _CustomExpansionTileState extends State<CustomExpansionTile>
                   child: child,
                 );
               },
-              child: Column(children: widget.children),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_isExpanded)
+                     Divider(thickness: 1, height: 1,color: Colors.grey.shade300,),
+                  AppSpacing.small(context),
+                  ...widget.children,
+                ],
+              ),
             ),
           ),
+
         ],
       ),
     );

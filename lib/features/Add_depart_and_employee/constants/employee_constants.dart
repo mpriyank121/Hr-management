@@ -34,5 +34,5 @@ class EmployeeConstants {
   static const String phoneNumberTitle = "Phone Number";
   static const String emailTitle = "Email";
   static const String panCardTitle = "Upload your PAN card";
-  static const String joiningDateTitle = "Joining Date Of Employee";
+  static const String joiningDateTitle = "Date of Joining";
 } 

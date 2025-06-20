@@ -61,7 +61,7 @@ class GroupedEmployeeList extends StatelessWidget {
                         style: FontStyles.subTextStyle(),
                       ),
                       trailing: Text(
-                        '₹8,050', // You might want to add salary to the Employee model
+                        employee.salary, // You might want to add salary to the Employee model
                         style: FontStyles.subHeadingStyle(fontWeight: FontWeight.bold),
                       ),
                       onTap: () {

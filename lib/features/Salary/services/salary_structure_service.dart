@@ -24,6 +24,7 @@ class SalaryStructureService {
           'total_deductions': model.totalDeductions.toString(),
           'net_amount': model.netSalary.toString(),
           'ctc': model.ctc.toString(),
+          "tax":  model.proffesionalTax.toString()
         },
       );
 

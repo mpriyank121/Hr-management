@@ -1,5 +1,5 @@
 class LeaveRequestModel {
-  final String? leaveName;
+  final String leaveName;
   final String leaveId;
   final String empName;
   final String leaveStartDate;
@@ -11,6 +11,7 @@ class LeaveRequestModel {
   final String applyDate;
   final String Department;
   final String profileImageUrl;
+  final String empCode;
 
   LeaveRequestModel({
     required this.leaveName,
@@ -24,7 +25,8 @@ class LeaveRequestModel {
     required this.statusId,
     required this.applyDate,
     required this.Department,
-    required this.profileImageUrl
+    required this.profileImageUrl,
+    required this.empCode
   });
 
   factory LeaveRequestModel.fromJson(Map<String, dynamic> json) {
@@ -41,6 +43,8 @@ class LeaveRequestModel {
       Department: json['department'],
       profileImageUrl:json['emp_profile'],
       applyDate: json['apply_date'],
+      empCode: json['emp_code']
+
 
     );
   }

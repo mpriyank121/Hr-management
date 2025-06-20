@@ -7,9 +7,9 @@ class AppMargin extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return SafeArea(child: Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0), // Set margin as per your need
       child: child,
-    );
+    ));
   }
 }

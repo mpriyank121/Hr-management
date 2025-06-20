@@ -117,12 +117,15 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
               const Spacer(),
               Row(
                 children: [
+
                   Expanded(
-                    child: PrimaryButton(
+                    child:  PrimaryButton(
+                      text: "Delete Department",
                       textColor: const Color(0xFFF25922),
                       buttonColor: const Color(0x19CD0909),
-                      text: "Cancel",
-                      onPressed: () => Get.back(),
+                      onPressed: () async {
+                        await controller.deleteDepartment(departmentId: widget.department!.id);
+                      },
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -163,14 +166,7 @@ class _AddNewDepartmentScreenState extends State<AddNewDepartmentScreen> {
               ),
               if (widget.department != null) ...[
                 const SizedBox(height: 16),
-                PrimaryButton(
-                  text: "Delete Department",
-                  buttonColor: Colors.red,
-                  textColor: Colors.white,
-                  onPressed: () async {
-                    await controller.deleteDepartment(departmentId: widget.department!.id);
-                  },
-                ),
+
               ],
             ],
           );

@@ -1,101 +1,145 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:hr_management/config/App_margin.dart';
+import 'package:hr_management/config/app_spacing.dart';
 import 'package:hr_management/core/widgets/App_bar.dart';
-
+import '../../core/widgets/Custom_tab_widget.dart';
 import 'Widgets/leave_request.dart';
 import 'controllers/leave_request_controller.dart';
 
 class LeaveApprovalScreen extends StatelessWidget {
   final LeaveRequestController leaveController = Get.put(LeaveRequestController());
+  final TabControllerX tabController = Get.put(TabControllerX());
 
   @override
   Widget build(BuildContext context) {
+    tabController.selectedIndex.value = 0;
     return Scaffold(
       appBar: CustomAppBar(title: "Leave Approval"),
-      body: Obx(() {
-        if (leaveController.isLoading.value) {
-          return const Center(child: CircularProgressIndicator());
-        }
+      body: AppMargin(child: Column(
+        children: [
+          AppSpacing.small(context),
+          CustomTabWidget(
+            tabTitles: ["Requested", "Approved", "Rejected"],
+            controller: tabController,
+          ),
+          AppSpacing.small(context),
+          Expanded(
+            child: Obx(() {
+              if (leaveController.isLoading.value) {
+                return const Center(child: CircularProgressIndicator());
+              }
 
-        if (leaveController.errorMessage.isNotEmpty) {
-          return Center(child: Text(leaveController.errorMessage.value));
-        }
+              if (leaveController.errorMessage.isNotEmpty) {
+                return Center(child: Text(leaveController.errorMessage.value));
+              }
 
-        if (leaveController.leaveList.isEmpty) {
-          return const Center(child: Text("No leave requests found."));
-        }
+              final String selectedStatus;
+              switch (tabController.selectedIndex.value) {
+                case 1:
+                  selectedStatus = 'approved';
+                  break;
+                case 2:
+                  selectedStatus = 'rejected';
+                  break;
+                default:
+                  selectedStatus = 'requested';
+              }
 
-        return ListView.builder(
-          padding: const EdgeInsets.symmetric(vertical: 8),
-          itemCount: leaveController.leaveList.length,
-          itemBuilder: (context, index) {
-            final leave = leaveController.leaveList[index];
-            final currentStatus = leave.status ?? "Requested";
+              final filteredList = leaveController.leaveList.where((leave) {
+                final currentStatus = (leave.status ?? 'requested').toLowerCase();
+                if (selectedStatus == 'approved') {
+                  return currentStatus == 'approved';
+                }
+                if (selectedStatus == 'rejected') {
+                  return currentStatus == 'rejected' || currentStatus == 'declined';
+                }
+                return currentStatus != 'approved' &&
+                    currentStatus != 'rejected' &&
+                    currentStatus != 'declined';
+              }).toList();
 
-            // Normalize status
-            String mappedStatus;
-            if (currentStatus.toLowerCase() == 'approved') {
-              mappedStatus = 'approved';
-            } else if (currentStatus.toLowerCase() == 'rejected' || currentStatus.toLowerCase() == 'declined') {
-              mappedStatus = 'declined';
-            } else {
-              mappedStatus = 'requested';
-            }
+              if (filteredList.isEmpty) {
+                return Center(
+                    child: Text("No leave requests found in this category."));
+              }
 
-            String leaveDays = _calculateLeaveDays(leave.leaveStartDate, leave.leaveEndDate);
+              return ListView.builder(
+                itemCount: filteredList.length,
+                itemBuilder: (context, index) {
+                  final leave = filteredList[index];
+                  final currentStatus = leave.status ?? "Requested";
 
-            return LeaveRequestCard(
-              name: leave.empName ?? "Unknown Employee",
-              department: leave.Department ?? "Unknown Department",
-              leaveDate: "${leave.leaveStartDate ?? ''} - ${leave.leaveEndDate ?? ''}",
-              leaveDays: leaveDays,
-              leaveType: leave.leaveId ?? "General Leave",
-              notes: leave.reason ?? "No reason provided",
-              appliedDate: leave.applyDate ?? "",
-              status: mappedStatus,
-              leaveid: leave.leaveId,
-              profileImageUrl: leave.profileImageUrl,
+                  // Normalize status
+                  String mappedStatus;
+                  if (currentStatus.toLowerCase() == 'approved') {
+                    mappedStatus = 'approved';
+                  } else if (currentStatus.toLowerCase() == 'rejected' ||
+                      currentStatus.toLowerCase() == 'declined') {
+                    mappedStatus = 'declined';
+                  } else {
+                    mappedStatus = 'requested';
+                  }
 
-              onApprove: mappedStatus == 'requested'
-                  ? () => _showConfirmationDialog(
-                context: context,
-                title: "Approve Leave",
-                message: "Approve ${leave.empName}'s leave request?",
-                onConfirmed: () async {
-                  leave.status = "Approved";
-                  leaveController.leaveList.refresh();
+                  String leaveDays =
+                  _calculateLeaveDays(leave.leaveStartDate, leave.leaveEndDate);
 
-                  await leaveController.updateLeaveStatus(
-                    leaveId: leave.leaveId,
-                    action: 2,
-                    reason: "Approved by manager",
+                  return LeaveRequestCard(
+                    name: leave.empName ?? "Unknown Employee",
+                    department: leave.Department ?? "Unknown Department",
+                    leaveDate:
+                    "${leave.leaveStartDate ?? ''} - ${leave.leaveEndDate ?? ''}",
+                    leaveDays: leaveDays,
+                    leaveType: leave.leaveId ?? "General Leave",
+                    notes: leave.reason ?? "No reason provided",
+                    appliedDate: leave.applyDate ?? "",
+                    status: mappedStatus,
+                    leaveid: leave.leaveId,
+                    profileImageUrl: leave.profileImageUrl,
+                    empCode: leave.empCode,
+                    leaveName: leave.leaveName,
+                    onApprove: mappedStatus == 'requested'
+                        ? () => _showConfirmationDialog(
+                      context: context,
+                      title: "Approve Leave",
+                      message: "Approve ${leave.empName}'s leave request?",
+                      onConfirmed: () async {
+                        leave.status = "Approved";
+                        leaveController.leaveList.refresh();
+
+                        await leaveController.updateLeaveStatus(
+                          leaveId: leave.leaveId,
+                          action: 2,
+                          reason: "Approved by manager",
+                        );
+                      },
+                    )
+                        : null,
+                    onDecline: mappedStatus == 'requested'
+                        ? () => _showConfirmationDialog(
+                      context: context,
+                      title: "Decline Leave",
+                      message: "Decline ${leave.empName}'s leave request?",
+                      onConfirmed: () async {
+                        leave.status = "Rejected";
+                        leaveController.leaveList.refresh();
+
+                        await leaveController.updateLeaveStatus(
+                          leaveId: leave.leaveId,
+                          action: 3,
+                          reason: "Rejected by manager",
+                        );
+                      },
+                    )
+                        : null,
                   );
                 },
-              )
-                  : null,
-
-              onDecline: mappedStatus == 'requested'
-                  ? () => _showConfirmationDialog(
-                context: context,
-                title: "Decline Leave",
-                message: "Decline ${leave.empName}'s leave request?",
-                onConfirmed: () async {
-                  leave.status = "Rejected";
-                  leaveController.leaveList.refresh();
-
-                  await leaveController.updateLeaveStatus(
-                    leaveId: leave.leaveId,
-                    action: 3,
-                    reason: "Rejected by manager",
-                  );
-                },
-              )
-                  : null,
-            );
-          },
-        );
-      }),
+              );
+            }),
+          ),
+        ],
+      ),)
     );
   }
 

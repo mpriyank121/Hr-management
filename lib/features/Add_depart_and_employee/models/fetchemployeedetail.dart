@@ -14,6 +14,8 @@ class EmployeeDetailModel {
   final String? panUrl;
   final String? doj;
   final String? userRoleId;
+  final String? salary;
+  final String? dob;
 
   EmployeeDetailModel({
     required this.id,
@@ -31,6 +33,8 @@ class EmployeeDetailModel {
     this.panUrl,
     this.doj,
     this.userRoleId,
+    this.salary,
+    this.dob
   });
 
   factory EmployeeDetailModel.fromJson(Map<String, dynamic> json) {
@@ -55,6 +59,8 @@ class EmployeeDetailModel {
           : null,
       doj: json['doj'],
       userRoleId: json['user_role']?.toString(),
+      salary:  json['salary']?.toString(),
+      dob: json['dob']
     );
   }
 

@@ -17,7 +17,18 @@ import 'models/salary_structure_model.dart';
 import '../../core/widgets/custom_toast.dart';
 
 class SalaryStructureForm extends StatefulWidget {
-  const SalaryStructureForm({super.key});
+  final String? employeeCode;
+  final String? employeeName;
+  final String? departmentId;
+  final String? salary;
+
+  const SalaryStructureForm({
+    Key? key,
+    this.employeeCode,
+    this.employeeName,
+    this.departmentId,
+    this.salary,
+  }) : super(key: key);
 
   @override
   State<SalaryStructureForm> createState() => _SalaryStructureFormState();
@@ -31,18 +42,37 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
   late final TextEditingController employeeCodeController;
   late final TextEditingController employeeNameController;
   late final TextEditingController basicSalaryController;
+  late final TextEditingController salaryController;
+  late final TextEditingController workingDaysController;
   late final TextEditingController ctcController;
 
   final List<String> selectedDeductions = [];
+  String selectedMonth = "";
+  final List<String> months = const [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  bool deductFullPfFromEmployee = false;
 
   @override
   void initState() {
     super.initState();
-    employeeCodeController = TextEditingController();
-    employeeNameController = TextEditingController();
+    employeeCodeController = TextEditingController(text: widget.employeeCode ?? "");
+    employeeNameController = TextEditingController(text: widget.employeeName ?? "");
     basicSalaryController = TextEditingController();
+    salaryController = TextEditingController(text: widget.salary ?? "");
+    workingDaysController = TextEditingController();
     ctcController = TextEditingController();
-    _departmentController.fetchDepartments();
+    _departmentController.fetchDepartments().then((_) {
+      if (widget.departmentId != null) {
+        final dept = _departmentController.departmentList.firstWhereOrNull((d) => d.id == widget.departmentId);
+        if (dept != null) {
+          _departmentController.selectDepartment(dept);
+        }
+      }
+    });
+    selectedMonth = months[DateTime.now().month - 1];
   }
 
   @override
@@ -50,17 +80,18 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
     employeeCodeController.dispose();
     employeeNameController.dispose();
     basicSalaryController.dispose();
+    salaryController.dispose();
+    workingDaysController.dispose();
     ctcController.dispose();
     super.dispose();
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: CustomAppBar(
-        title: "Add Salary Structure",
+        title: ""
+            "Add Employee Monthly Salary",
         leading: const BackButton(),
       ),
       body: AppMargin(
@@ -89,43 +120,7 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                             ),
                           ),
                           AppSpacing.small(context),
-                          PrimaryButton(
-                            widthFactor: 0.3,
-                            heightFactor: 0.05,
-                            text: "Fetch",
-                            onPressed: () async {
-                              if (employeeCodeController.text.isNotEmpty) {
-                                final success = await _salaryController.fetchEmployeeDetails(
-                                  employeeCodeController.text,
-                                );
-                                if (success) {
-                                  employeeNameController.text = _salaryController.employeeName.value;
-                                  if (_salaryController.departmentName.value.isNotEmpty) {
-                                    final dept = _departmentController.departmentList.firstWhere(
-                                          (d) => d.department == _salaryController.departmentName.value,
-                                      orElse: () => _departmentController.departmentList.first,
-                                    );
-                                    _departmentController.selectDepartment(dept);
-                                  }
-                                } else {
-                                  employeeNameController.clear();
-                                  CustomToast.showMessage(
-                                    context: context,
-                                    title: "Error",
-                                    message: "Employee code not found",
-                                    isError: true,
-                                  );
-                                }
-                              } else {
-                                CustomToast.showMessage(
-                                  context: context,
-                                  title: "Error",
-                                  message: "Please enter employee code",
-                                  isError: true,
-                                );
-                              }
-                            },
-                          ),
+
                         ],
                       ),
                       AppSpacing.small(context),
@@ -175,33 +170,32 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                           Expanded(
                             flex: 3,
                             child: CustomTextField(
-                              hint: "Enter Amount",
-                              controller: basicSalaryController,
+                              hint: "Salary",
+                              controller: salaryController,
                               keyboardType: TextInputType.number,
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')), // Allow decimals
-                              ],
                             ),
                           ),
-                          const SizedBox(width: 8), // Add spacing between TextField and Button
+                          const SizedBox(width: 8),
                           Expanded(
                             flex: 1,
                             child: PrimaryButton(
                               heightFactor: 0.05,
                               text: "Calculate",
-                              onPressed: () {
-                                if (basicSalaryController.text.isNotEmpty) {
+                              onPressed: () async {
+                                if (salaryController.text.isNotEmpty) {
                                   try {
-                                    final amount = double.parse(basicSalaryController.text);
+                                    final amount = double.parse(salaryController.text);
                                     final deductionKey = _getDeductionKey();
                                     _salaryController.updateDeductionKey(deductionKey);
                                     _salaryController.updateDeductions(selectedDeductions);
-                                    _salaryController.fetchDeductionsFromAPI(amount);
+                                    await _salaryController.fetchDeductionsFromAPI(amount);
+                                    // Recalculate net salary based on PF switch
+                                    setState(() {});
                                   } catch (e) {
                                     CustomToast.showMessage(
                                       context: context,
                                       title: "Error",
-                                      message: "Please enter a valid amount",
+                                      message: "Please enter a valid salary",
                                       isError: true,
                                     );
                                   }
@@ -209,7 +203,7 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                                   CustomToast.showMessage(
                                     context: context,
                                     title: "Error",
-                                    message: "Please enter amount",
+                                    message: "Salary is required",
                                     isError: true,
                                   );
                                 }
@@ -238,11 +232,20 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                                       Expanded(
                                         flex: 2,
                                         child: Wrap(
-                                          spacing: 8,
-                                          runSpacing: 8,
+                                          spacing: 4,
+                                          runSpacing: 4,
                                           children: [
                                             _buildDeductionChip('PF'),
                                             _buildDeductionChip('ESI'),
+                                            _buildDeductionChip('PF from Employee',
+                                              isFullPf: true,
+                                              selected: deductFullPfFromEmployee,
+                                              onSelected: (selected) {
+                                                setState(() {
+                                                  deductFullPfFromEmployee = selected;
+                                                });
+                                              },
+                                            ),
                                           ],
                                         ),
                                       ),
@@ -271,6 +274,11 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                                       const SizedBox(height: 12),
                                       _buildSalaryRow("HRA", _salaryController.hra.value),
                                       const SizedBox(height: 12),
+                                      if (_salaryController.professionalTax != null && _salaryController.professionalTax.value > 0) ...[
+                                        const SizedBox(height: 12),
+                                        _buildSalaryRow("Professional Tax", _salaryController.professionalTax.value),
+                                      ],
+                                      const SizedBox(height: 12),
                                       _buildSalaryRow("Other Allowances", _salaryController.otherallowance.value),
 
                                       if (selectedDeductions.contains('PF')) ...[
@@ -290,8 +298,23 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                                         _buildSalaryRow("Total Deductions", _salaryController.totalDeductions.value),
                                         const SizedBox(height: 12),
                                       ],
-                                      _buildSalaryRow("Net Salary", _salaryController.netSalary.value),
-
+                                      const SizedBox(height: 12),
+                                      _buildSalaryRow(
+                                        deductFullPfFromEmployee ? "PF Deducted (Employee + Employer)" : "PF Deducted (Employee)",
+                                        _salaryController.pf.value * (deductFullPfFromEmployee ? 2 : 1),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      _buildSalaryRow(
+                                        "Net Salary",
+                                        (salaryController.text.isNotEmpty
+                                          ? double.tryParse(salaryController.text) ?? 0
+                                          : 0)
+                                          - (_salaryController.pf.value * (deductFullPfFromEmployee ? 2 : 1))
+                                          - _salaryController.esi.value
+                                          - _salaryController.professionalTax.value
+                                          - _salaryController.totalDeductions.value
+                                          + _salaryController.pf.value // add back employee PF if totalDeductions already includes it
+                                      ),
                                     ],
                                   ),
                                 ),
@@ -355,14 +378,16 @@ class _SalaryStructureFormState extends State<SalaryStructureForm> {
                             totalDeductions: _salaryController.totalDeductions.value,
                             netSalary: _salaryController.netSalary.value,
                             ctc: _salaryController.ctc.value,
+                            proffesionalTax: _salaryController.professionalTax.value
                           );
-
                           await _salaryController.submitSalaryStructure(model);
                         },
                       ),
                     ),
                   ],
                 ),
+                // Replace SwitchListTile with deduction chip for full PF
+
               ],
             ),
           ),
@@ -413,8 +438,29 @@ int _getDeductionKey() {
   }
 }
 
-// Updated _buildDeductionChip method
-Widget _buildDeductionChip(String label) {
+// Update _buildDeductionChip to support custom label and callback
+Widget _buildDeductionChip(String label, {bool isFullPf = false, bool selected = false, ValueChanged<bool>? onSelected}) {
+  if (isFullPf) {
+    return FilterChip(
+      label: Text(label),
+      selected: selected,
+      onSelected: onSelected,
+      selectedColor: AppColors.secondary,
+      checkmarkColor: Colors.white,
+      backgroundColor: Colors.grey[200],
+      showCheckmark: true,
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      labelStyle: TextStyle(
+        color: selected ? Colors.white : Colors.black87,
+        fontWeight: FontWeight.w500,
+      ),
+      avatar: Icon(
+        Icons.check,
+        size: 16,
+        color: selected ? Colors.white : Colors.grey[600],
+      ),
+    );
+  }
   final isSelected = selectedDeductions.contains(label);
   return FilterChip(
     label: Text(label),
@@ -428,9 +474,9 @@ Widget _buildDeductionChip(String label) {
         }
       });
       // Automatically call API when selections change
-      if (basicSalaryController.text.isNotEmpty) {
+      if (salaryController.text.isNotEmpty) {
         try {
-          final amount = double.parse(basicSalaryController.text);
+          final amount = double.parse(salaryController.text);
           final deductionKey = _getDeductionKey();
           _salaryController.updateDeductionKey(deductionKey);
           _salaryController.updateDeductions(selectedDeductions);

@@ -18,8 +18,8 @@ class SalaryStructureController extends GetxController {
   final salaryType = "CTC".obs;
   final employeeName = "".obs;
   final departmentName = "".obs;
+  final employeeSalary = "".obs;
   final isLoading = false.obs;
-
   final pfPercent = 12.0.obs;
   final esiPercent = 0.75.obs;
   final pfManual = false.obs;
@@ -29,6 +29,7 @@ class SalaryStructureController extends GetxController {
   final otherallowance = 0.0.obs;
   final hra = 0.0.obs;
   final deductionKey = 0.obs;
+  final professionalTax = 0.0.obs;
 
   // Store temporary values until Get Details is pressed
   int _tempDeductionKey = 0;
@@ -40,6 +41,7 @@ class SalaryStructureController extends GetxController {
   final errorMessage = "".obs;
 
   Future<void> fetchDeductionsFromAPI(double amount) async {
+    final storedPhone = await SharedPrefHelper.getPhone();
     print('Starting API call with amount: $amount and deduction key: $_tempDeductionKey'); // Debug log
     try {
       isLoading.value = true;
@@ -51,19 +53,20 @@ class SalaryStructureController extends GetxController {
       
       request.fields.addAll({
         'type': '106a88a99a88a105a112a86a89a105a92a88a98a91a102a110a101a107',
+        "mob" : EncryptionHelper.encryptString(storedPhone!),
         'amount': amount.toString(),
         'id': _tempDeductionKey.toString(),
       });
 
-      print('Sending API request: ${request.fields}'); // Debug log
+      print('Sending API request: \\${request.fields}'); // Debug log
       
       http.StreamedResponse response = await request.send();
       final responseData = await response.stream.bytesToString();
-      print('Received API response: $responseData'); // Debug log
+      print('Received API response: \\${responseData}'); // Debug log
       
       if (response.statusCode == 200) {
         final jsonData = json.decode(responseData);
-        print('Parsed JSON data: $jsonData'); // Debug log
+        print('Parsed JSON data: \\${jsonData}'); // Debug log
         
         if (jsonData['message'] == 'found') {
           // Update all values at once after API call
@@ -77,9 +80,10 @@ class SalaryStructureController extends GetxController {
           hra.value = double.tryParse(jsonData['hra_pay']?.toString() ?? '0') ?? 0;
           otherallowance.value = double.tryParse(jsonData['other_pay']?.toString() ?? '0') ?? 0;
           ctc.value = double.tryParse(jsonData['ctc']?.toString() ?? '0') ?? 0;
+          professionalTax.value = double.tryParse(jsonData['tax']?.toString() ?? '0') ?? 0;
         }
       } else {
-        print('API call failed with status: ${response.statusCode}'); // Debug log
+        print('API call failed with status: \\${response.statusCode}'); // Debug log
       }
     } catch (e) {
       print('Error in fetchDeductionsFromAPI: $e'); // Debug log
@@ -175,6 +179,7 @@ class SalaryStructureController extends GetxController {
 
           employeeName.value = data['emp_name'] ?? '';
           departmentName.value = data['department_name'] ?? '';
+          employeeSalary.value = data['salary']?.toString() ?? '';
 
           if (employeeName.value.isEmpty && departmentName.value.isEmpty) {
             print('Warning: Both name and department are empty');
@@ -250,20 +255,20 @@ class SalaryStructureController extends GetxController {
       final salaryData = await SalaryStructureService.fetchEmployeeSalaryDetails(employeeCode);
       
       if (salaryData != null) {
-        print('Salary Data: $salaryData');
         employeeSalaryStructure.value = SalaryStructureModel(
           employeeCode: employeeCode,
           employeeName: salaryData['emp_name'] ?? '',
           departmentId: salaryData['department_id'] ?? '',
           salaryType: salaryData['salary_type'] ?? 'CTC',
           basicSalary: double.tryParse(salaryData['basic_pay']?.toString() ?? '0') ?? 0,
-          pf: double.tryParse(salaryData['pf']?.toString() ?? '0') ?? 0,
-          esi: double.tryParse(salaryData['esic']?.toString() ?? '0') ?? 0,
+          pf: double.tryParse(salaryData['pf_employee']?.toString() ?? '0') ?? 0,
+          esi: double.tryParse(salaryData['esic_employee']?.toString() ?? '0') ?? 0,
           hra: double.tryParse(salaryData['hra']?.toString() ?? '0') ?? 0,
           totalDeductions: double.tryParse(salaryData['total_deductions']?.toString() ?? '0') ?? 0,
           netSalary: double.tryParse(salaryData['net_amount']?.toString() ?? '0') ?? 0,
           ctc: double.tryParse(salaryData['ctc']?.toString() ?? '0') ?? 0,
           otherAllowances: double.tryParse(salaryData['other_pay']?.toString() ?? '0'),
+          proffesionalTax: double.tryParse(salaryData['tax']?.toString() ?? '0')
         );
       } else {
         errorMessage.value = "Failed to fetch salary details";
@@ -273,6 +278,50 @@ class SalaryStructureController extends GetxController {
       errorMessage.value = "Error: ${e.toString()}";
     } finally {
       isLoadingSalary.value = false;
+    }
+  }
+
+  Future<void> fetchDeductionsFromAPIWithMonthAndDays(double amount, String month, int workingDays) async {
+    print('Calling API with amount: $amount, month: $month, workingDays: $workingDays');
+    try {
+      isLoading.value = true;
+      var request = http.MultipartRequest(
+        'POST',
+        Uri.parse('https://apis-stg.bookchor.com/webservices/hrms/v1/employee.php'),
+      );
+      request.fields.addAll({
+        'type': '106a88a99a88a105a112a86a89a105a92a88a98a91a102a110a101a107',
+        'amount': amount.toString(),
+        'id': _tempDeductionKey.toString(),
+
+        'working_days': workingDays.toString(),
+      });
+      print('Sending API request: \\${request.fields}');
+      http.StreamedResponse response = await request.send();
+      final responseData = await response.stream.bytesToString();
+      print('Received API response: \\${responseData}');
+      if (response.statusCode == 200) {
+        final jsonData = json.decode(responseData);
+        print('Parsed JSON data: \\${jsonData}');
+        if (jsonData['message'] == 'found') {
+          basicSalary.value = amount;
+          deductionKey.value = _tempDeductionKey;
+          pf.value = double.tryParse(jsonData['pf_employee']?.toString() ?? '0') ?? 0;
+          esi.value = double.tryParse(jsonData['esic_employee']?.toString() ?? '0') ?? 0;
+          netSalary.value = double.tryParse(jsonData['net_amount']?.toString() ?? '0') ?? 0;
+          totalDeductions.value = double.tryParse(jsonData['total_deduction']?.toString() ?? '0') ?? 0;
+          basicSalary.value = double.tryParse(jsonData['basic_pay']?.toString() ?? '0') ?? 0;
+          hra.value = double.tryParse(jsonData['hra_pay']?.toString() ?? '0') ?? 0;
+          otherallowance.value = double.tryParse(jsonData['other_pay']?.toString() ?? '0') ?? 0;
+          ctc.value = double.tryParse(jsonData['ctc']?.toString() ?? '0') ?? 0;
+        }
+      } else {
+        print('API call failed with status: \\${response.statusCode}');
+      }
+    } catch (e) {
+      print('Error in fetchDeductionsFromAPIWithMonthAndDays: \\${e}');
+    } finally {
+      isLoading.value = false;
     }
   }
 } 

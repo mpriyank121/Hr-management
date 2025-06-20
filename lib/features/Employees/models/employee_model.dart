@@ -15,6 +15,8 @@ class Employee {
   final String email;
   final String userRole;
   final String empType;
+  final String salary;
+  final String workingHours;
 
   Employee({
     required this.id,
@@ -30,7 +32,9 @@ class Employee {
     required this.phone,
     required this.email,
     required this.userRole,
-    required this.empType
+    required this.empType,
+    required this.salary,
+    required this.workingHours
   });
 
   factory Employee.fromJson(Map<String, dynamic> json) {
@@ -50,11 +54,12 @@ class Employee {
       email: json['email'] ?? '',
       userRole: json['user_role'] ?? '',
       empType: json['emp_type'].toString() ?? '',
+      salary:  json['total_salary'].toString() ?? '',
+      workingHours: json['emp_working_hours'].toString() ?? '',
+
     );
   }
 }
-
-
    EmploymentStatus _employmentStatusFromString(String? status) {
     switch (status?.toString()) {
       case 'Full Time':

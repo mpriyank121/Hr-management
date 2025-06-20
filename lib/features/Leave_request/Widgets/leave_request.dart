@@ -22,6 +22,8 @@ class LeaveRequestCard extends StatelessWidget {
   final VoidCallback? onDecline;
   final VoidCallback? onAttachmentTap;
   final String? leaveid;
+  final String empCode;
+  final String leaveName;
 
    LeaveRequestCard({
     super.key,
@@ -37,7 +39,9 @@ class LeaveRequestCard extends StatelessWidget {
     this.onApprove,
     this.onDecline,
     this.onAttachmentTap,
-     this.leaveid
+     this.leaveid,
+     required this.empCode,
+     required this.leaveName
   });
 
   final LeaveRequestController leaveController = Get.put(LeaveRequestController());
@@ -46,8 +50,7 @@ class LeaveRequestCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isRequested = status == 'requested';
 
-    return AppMargin(
-      child: Container(
+    return Container(
         margin: const EdgeInsets.only(bottom: 12),
         decoration: BoxDecoration(
           color: Colors.white,
@@ -140,27 +143,53 @@ class LeaveRequestCard extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: status == 'approved'
                                 ? Colors.green.withOpacity(0.1)
                                 : status == 'declined'
-                                    ? Colors.red.withOpacity(0.1)
-                                    : Colors.blue.withOpacity(0.1),
+                                ? Colors.red.withOpacity(0.1)
+                                : Colors.blue.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            department,
-                            style: fontStyles.commonTextStyle.copyWith(
-                              color: status == 'approved'
-                                  ? Colors.green[700]
-                                  : status == 'declined'
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                department,
+                                style: fontStyles.commonTextStyle.copyWith(
+                                  color: status == 'approved'
+                                      ? Colors.green[700]
+                                      : status == 'declined'
                                       ? Colors.red[700]
                                       : Colors.blue[700],
-                              fontSize: 12,
-                            ),
+                                  fontSize: 12,
+                                ),
+                              ),
+
+                              // 👉 Vertical Divider
+                              Container(
+                                margin: EdgeInsets.symmetric(horizontal: 8),
+                                height: 14,
+                                width: 1,
+                                color: Colors.grey[400],
+                              ),
+
+                              Text(
+                                empCode,
+                                style: fontStyles.commonTextStyle.copyWith(
+                                  color: status == 'approved'
+                                      ? Colors.green[700]
+                                      : status == 'declined'
+                                      ? Colors.red[700]
+                                      : Colors.blue[700],
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
+
                       ],
                     ),
                   ),
@@ -225,7 +254,7 @@ class LeaveRequestCard extends StatelessWidget {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Leave Date: $leaveDate ($leaveDays)',
+                          'Leave Date: $leaveDate ($leaveDays) ($leaveName)',
                           style: fontStyles.subHeadingStyle.copyWith(
                             fontSize: 10,
                             color: Colors.grey[800],
@@ -305,9 +334,7 @@ class LeaveRequestCard extends StatelessWidget {
               ),
             ),
           ],
-        ),
-      ),
-    );
+        ));
   }
 
   Widget _buildActionButton(String text, Color color, VoidCallback onPressed) {

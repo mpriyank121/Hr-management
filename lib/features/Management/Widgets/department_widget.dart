@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:hr_management/config/app_spacing.dart';
 import 'package:hr_management/core/widgets/custom_expansion_tile.dart';
 
 import '../../../config/font_style.dart';
@@ -42,6 +43,7 @@ class _DepartmentWidgetState extends State<DepartmentWidget> {
                 icon: const Icon(Icons.edit),
                 onPressed: widget.onEdit,
               ),
+
           ],
         ),
         initiallyExpanded: expanded,
@@ -51,9 +53,13 @@ class _DepartmentWidgetState extends State<DepartmentWidget> {
           });
         },
         children: [
-          Container(
-            child: widget.child,
-          ),
+          Column(children: [
+            Container(
+              child: widget.child,
+            ),
+            AppSpacing.small(context)
+          ],)
+
         ],
       ),
     );

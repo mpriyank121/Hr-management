@@ -33,12 +33,12 @@ class LeaveCardConfig {
   static const double borderRadius = 12.0;
   static const Color backgroundColor = Color(0xFFECF8F4);
   static const Color borderColor = AppColors.primary;
-  static const EdgeInsets defaultPadding = EdgeInsets.all(8.0);
+  static const EdgeInsets defaultPadding = EdgeInsets.all(6.0);
   static const EdgeInsets defaultMargin = EdgeInsets.all(8.0);
   static final TextStyle titleStyle = AppTextStyles.textStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey);
   static final TextStyle countStyle = AppTextStyles.textStyle(fontSize: 14, color: Colors.grey[700]!);
   static EdgeInsets padding(BuildContext context) {
-    return const EdgeInsets.symmetric(vertical: 4, horizontal: 4);
+    return const EdgeInsets.symmetric(vertical: 2, horizontal: 2);
   }
 
   static EdgeInsets margin(BuildContext context) {
@@ -50,7 +50,7 @@ class LeaveCardConfig {
   }
 
   static double defaultHeight(BuildContext context) {
-    return MediaQuery.of(context).size.height * 0.07;  // Default fixed height
+    return MediaQuery.of(context).size.height * 0.055;  // Default fixed height
   }
 
 }

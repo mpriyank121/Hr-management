@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
-
-import '../../../config/app_text_styles.dart';
-import '../../Employees/models/employee_model.dart';
-import '../model/employee_model.dart';
+import 'package:hr_management/config/style.dart';
+import '../model/clock_in_model.dart';
+import 'employee_clock_screen.dart';
 
 class EmployeeListWidget extends StatelessWidget {
-  final List<Employee> employees;
+  final List<ClockInModel> employees;
+  final String title;
 
-  const EmployeeListWidget({super.key, required this.employees});
+  const EmployeeListWidget({super.key, required this.employees, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -20,31 +20,52 @@ class EmployeeListWidget extends StatelessWidget {
         final employee = employees[index];
         return ListTile(
           leading: CircleAvatar(
-            backgroundImage: NetworkImage(employee.avatarUrl),
+            backgroundImage: (employee.profileUrl != null && employee.profileUrl!.isNotEmpty)
+                ? NetworkImage("https://img.bookchor.com/${employee.profileUrl}")
+                : null,
+            child: (employee.profileUrl == null || employee.profileUrl!.isEmpty)
+                ? Text(
+                    employee.empName.isNotEmpty ? employee.empName[0].toUpperCase() : '?',
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  )
+                : null,
           ),
-          title:Column(
+          title: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                employee.name,
-                style:  TextStyle(fontWeight: FontWeight.bold),
+                employee.empName,
+                style: TextStyle(fontWeight: FontWeight.bold),
               ),
               Text(
-                  employee.position,
-                  style: AppTextStyles.subText)
-
-            ],),
-
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(width: 8),
-              Icon(Icons.chevron_right, color: Colors.black),
+                employee.empCode,
+                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+              ),
             ],
           ),
+          trailing: title == 'Check-In'
+              ? Text(
+                  employee.firstIn != null ? employee.firstIn! : '-',
+                  style: fontStyles.subHeadingStyle,
+                )
+              : IconButton(
+                  icon: Image.asset("assets/images/phone.png",height: 24,width: 24),
+                  onPressed: () {
+                    // Implement call action here
+                  },
+                ),
           onTap: () {
-            // Add action on tap if needed
-          },
+
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => ClockInDetailScreen(
+                     employee: employee,
+                  ),
+                ),
+              );
+            },
+
         );
       },
     );

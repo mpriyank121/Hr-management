@@ -14,6 +14,9 @@ class RequiredTextField extends StatelessWidget {
   final Function(String)? onChanged;
   final bool enabled;
   final TextCapitalization? textCapitalization;
+  final VoidCallback? onTap; // Added onTap parameter
+  final bool readOnly; // Added readOnly parameter
+
   const RequiredTextField({
     super.key,
     required this.hint,
@@ -26,7 +29,9 @@ class RequiredTextField extends StatelessWidget {
     this.showRequired = false,
     this.onChanged,
     this.enabled = true,
-    this.textCapitalization
+    this.textCapitalization,
+    this.onTap, // Added onTap parameter
+    this.readOnly = false, // Added readOnly parameter with default false
   });
 
   @override
@@ -34,14 +39,20 @@ class RequiredTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        CustomTextField(
-          hint: hint,
-          controller: controller,
-          validator: validator,
-          keyboardType: keyboardType,
-          inputFormatters: inputFormatters,
-          onChanged: onChanged,
-          enabled: enabled,
+        GestureDetector(
+          onTap: onTap,
+          child: AbsorbPointer(
+            absorbing: readOnly, // Prevent keyboard when readOnly is true
+            child: CustomTextField(
+              hint: hint,
+              controller: controller,
+              validator: validator,
+              keyboardType: keyboardType,
+              inputFormatters: inputFormatters,
+              onChanged: onChanged,
+              enabled: enabled,
+            ),
+          ),
         ),
         if (isRequired && showRequired && controller.text.isEmpty)
           Padding(
@@ -57,4 +68,4 @@ class RequiredTextField extends StatelessWidget {
       ],
     );
   }
-} 
+}

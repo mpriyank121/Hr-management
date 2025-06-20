@@ -1,9 +1,6 @@
 import 'package:flutter/material.dart';
-
 import '../../config/font_style.dart';
 import '../../features/Employees/models/employee_model.dart';
-import '../../features/Management/Widgets/employee_clock_screen.dart';
-import '../../features/Management/model/employee_model.dart';
 
 
 
@@ -27,12 +24,12 @@ class DepartmentStatusBox extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (_) => ClockInScreen(employees: employees, title: title),
-          ),
-        );
+        // Navigator.push(
+        //   context,
+        //   MaterialPageRoute(
+        //     builder: (_) => ClockInScreen(employees: employees, title: title),
+        //   ),
+        // );
       },
       child: Container(
         padding: const EdgeInsets.all(12),

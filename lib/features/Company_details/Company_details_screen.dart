@@ -179,25 +179,6 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
   Future<void> _onSavePressed() async {
     showRequired.value = true;
-
-    // Check if any required field is empty
-    if (_getController('orgName').text.isEmpty ||
-        _getController('address').text.isEmpty ||
-        _getController('pincode').text.isEmpty ||
-        _getController('email').text.isEmpty ||
-        _getController('phone').text.isEmpty ||
-        _getController('panNumber').text.isEmpty ||
-        selectedIndustryId == null) {
-
-      CustomToast.showMessage(
-        context: context,
-        title: "Error",
-        message: "Please fill all required fields",
-        isError: true,
-      );
-      return;
-    }
-
     // Validate form fields
     if (!_formKey.currentState!.validate()) {
       return;
@@ -290,8 +271,8 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  AppSpacing.small(context),
                   FormSection(
-                    title: "",
                     child: CompanyLogoPicker(
                       title: "Company Logo",
                       initialImage: widget.isEditMode
@@ -530,7 +511,7 @@ class _CompanyDetailsScreenState extends State<CompanyDetailsScreen> {
 
                   AppSpacing.small(context),
                   PrimaryButton(
-                    text: widget.isEditMode ? "Save" : "Register Now",
+                    text: widget.isEditMode ? "Update" : "Register Now",
                     onPressed: _onSavePressed,
                   ),
 

@@ -23,32 +23,37 @@ class CustomTabWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Obx(() {
       return Container(
-
+        padding: EdgeInsets.all(6),
         decoration: BoxDecoration(
-          color: Colors.grey.shade200,
-          borderRadius: BorderRadius.circular(15),
+          color: Colors.grey.shade300,
+          borderRadius: BorderRadius.circular(30),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black12,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            )
+          ],
         ),
         child: Row(
           children: List.generate(tabTitles.length, (index) {
             bool isSelected = controller.selectedIndex.value == index;
             return Expanded(
               child: GestureDetector(
-                onTap: () {
-                  controller.selectTab(index);
-                },
-                child: Container(
-                  height: 48,
+                onTap: () => controller.selectTab(index),
+                child: AnimatedContainer(
+                  duration: Duration(milliseconds: 250),
+                  height: 44,
                   decoration: BoxDecoration(
                     color: isSelected ? Colors.deepOrange : Colors.transparent,
-                    borderRadius: BorderRadius.circular(15),
+                    borderRadius: BorderRadius.circular(30),
                   ),
                   alignment: Alignment.center,
                   child: Text(
                     tabTitles[index],
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected ? Colors.grey.shade300 : Colors.deepOrange,
                       fontWeight: FontWeight.w600,
-                      fontSize: 16,
                     ),
                   ),
                 ),
@@ -57,6 +62,7 @@ class CustomTabWidget extends StatelessWidget {
           }),
         ),
       );
+
     });
   }
 }

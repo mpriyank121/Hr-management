@@ -12,6 +12,7 @@ class SalaryStructureModel {
   final double ctc;
   final double? otherAllowances;
   final int? deductionKey;
+  final double? proffesionalTax;
 
   SalaryStructureModel({
     required this.employeeCode,
@@ -26,7 +27,8 @@ class SalaryStructureModel {
     required this.netSalary,
     required this.ctc,
     this.deductionKey,
-    this.otherAllowances
+    this.otherAllowances,
+    required this.proffesionalTax
 
   });
 
@@ -44,6 +46,7 @@ class SalaryStructureModel {
       "esic_employee" : esi,
       "ctc" : ctc,
       "salary_type" : salaryType,
+      "tax" : proffesionalTax
     };
   }
 }

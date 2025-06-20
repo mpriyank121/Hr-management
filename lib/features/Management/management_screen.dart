@@ -1,21 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
-import 'package:hr_management/config/style.dart';
+import 'package:hr_management/core/widgets/date_range_selector.dart';
 import '../../config/App_margin.dart';
 import '../../config/app_spacing.dart';
 import '../../config/font_style.dart';
 import '../../core/widgets/App_bar.dart';
-import '../../core/widgets/Department_status_box.dart';
 import '../Attendence/attendence_screen.dart';
 import '../Employees/Widgets/department_employee_list.dart';
 import '../Employees/controllers/employee_controller.dart';
 import 'Widgets/Star_tile.dart';
+import 'model/clock_in_model.dart';
+import 'services/ClockInService.dart';
+import 'Widgets/attendance_status_section.dart';
 import 'Widgets/bordered_container.dart';
 
-class ManagementScreen extends StatelessWidget {
-  final List<String> departments = ['Finance', 'Engineering', 'Human Resources'];
+class ManagementScreen extends StatefulWidget {
+  const ManagementScreen({Key? key}) : super(key: key);
+
+  @override
+  State<ManagementScreen> createState() => _ManagementScreenState();
+}
+
+class _ManagementScreenState extends State<ManagementScreen> {
   final EmployeeController employeeController = Get.put(EmployeeController());
+  List<ClockInModel> checkInList = [];
+  List<ClockInModel> notCheckInList = [];
+  List<ClockInModel> onLeave = [];
+
+  @override
+  void initState() {
+    super.initState();
+    ClockInService.fetchAttendanceStatus().then((data) {
+      setState(() {
+        checkInList = data['checkIN'] ?? [];
+        notCheckInList = data['notcheckIN'] ?? [];
+        onLeave = data['emp_on_leave'] ?? [];
+
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,27 +68,32 @@ class ManagementScreen extends StatelessWidget {
                     Text(
                       totalEmployees.toString(),
                       style: FontStyles.subHeadingStyle(
-                        color: Color(0xFF12D18E)
-
+                          color: Color(0xFF12D18E)
                       ),
                     ),
                   ],
                 ),
               ),
               AppSpacing.small(context),
-              // _attendanceStats(screenHeight),
+              AttendanceStatusSection(
+                checkIn: checkInList,
+                notCheckIn: notCheckInList,
+                onLeave: onLeave,
+              ),
               AppSpacing.small(context),
+               // _attendanceStats(screenHeight),
               BorderedContainer(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppSpacing.small(context),
                     _workingHoursSection(),
                     AppSpacing.small(context),
                     DepartmentEmployeeList(
-                      showEditButton: false,
-                      onTapRoute: () => AttendancePage(title: ''),
-                    ),
+                      onTapRoute: (String empId) => AttendancePage(
+                        title: '',
+                        employeeId: empId,
+                      ),
+                    )
                   ],
                 ),
               ),
@@ -129,18 +158,24 @@ class ManagementScreen extends StatelessWidget {
   }
 
   Widget _workingHoursSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    final EmployeeController employeeController = Get.find<EmployeeController>();
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text("Working Hours", style: FontStyles.subHeadingStyle()),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Column(
           children: [
-            Text("Total 216 hr ", style: FontStyles.subTextStyle()),
-            Text("This Month", style: FontStyles.subTextStyle()),
+            Text("Working Hours", style: FontStyles.subHeadingStyle()),
+            Obx(() => Text(
+              "Total ${employeeController.totalWorkingHours.value} hr",
+              style: FontStyles.subTextStyle(color: Colors.green),
+            )),
           ],
         ),
-        const SizedBox(height: 8),
+        DateRangeSelectorWidget(
+          onDateRangeSelected: (start, end) {
+            employeeController.fetchEmployeesWithDateRange(start, end);
+          },
+        ),
       ],
     );
   }
